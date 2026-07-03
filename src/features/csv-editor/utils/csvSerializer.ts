@@ -4,6 +4,7 @@ import type { EntitiesState, CsvSection, SectionRow } from '../domain/entities'
 import { CSV_COLUMNS } from './csvParser'
 import { buildBetaMarker } from '../domain/csv.schema'
 import { resolveWorkPathImageCsvValue } from '../domain/phoneImagePath'
+import { TITLE_DIVIDER_MARKER } from '../domain/plateauTitleList'
 
 export type SerializeCsvOptions = {
     phoneImageWorkPath?: string
@@ -41,6 +42,17 @@ function packSectionRows(section: CsvSection, options: SerializeCsvOptions): Rec
 
     for (let i = 0; i < section.rows.length; i++) {
         const r: SectionRow = section.rows[i]
+
+        if (r.titleDivider) {
+            if (section.kind === 'invited') {
+                out.push({
+                    ...emptyCsvRow(),
+                    [CSV_COLUMNS.TITLE]: TITLE_DIVIDER_MARKER,
+                })
+            }
+
+            continue
+        }
 
         const titleText = r.title?.title ?? ''
         const isMarkerRow = false // marker row already emitted above

@@ -1,5 +1,6 @@
 // src/features/csv-editor/domain/entities.ts
 import type { SectionKind } from './csv.types'
+import type { PlateauTitleListItem } from './plateauTitleList'
 
 export const EntityTypes = {
     TITLES: 'titles',
@@ -56,6 +57,9 @@ export interface SectionRow {
     // allowed only in INVITATI
     waitTitle?: SimpleTitle
     waitLocation?: Location
+
+    // allowed only in INVITATI / PLATOU title ordering
+    titleDivider?: Extract<PlateauTitleListItem, { type: 'divider' }>
 }
 
 export interface CsvSection {

@@ -1,5 +1,6 @@
 export const ENTITY_EXPORT_FILENAMES = {
     titles: 'PA_titles.csv',
+    titlesWithHot: 'PA_titles_with_hot.csv',
     persons: 'PA_persons.csv',
     locations: 'PA_locations.csv',
     phones: 'PA_phones.csv',
@@ -14,6 +15,7 @@ export interface ResolveEntityExportPathInput {
 
 export interface EntityExportPaths {
     titlesPath: string
+    titlesWithHotPath: string
     personsPath: string
     locationsPath: string
     phonesPath: string
@@ -71,6 +73,7 @@ export function resolveEntityExportPaths(input: ResolveEntityExportPathInput): E
 
     return {
         titlesPath: joinPath(exportFolder, ENTITY_EXPORT_FILENAMES.titles),
+        titlesWithHotPath: joinPath(exportFolder, ENTITY_EXPORT_FILENAMES.titlesWithHot),
         personsPath: joinPath(exportFolder, ENTITY_EXPORT_FILENAMES.persons),
         locationsPath: joinPath(exportFolder, ENTITY_EXPORT_FILENAMES.locations),
         phonesPath: joinPath(exportFolder, ENTITY_EXPORT_FILENAMES.phones),

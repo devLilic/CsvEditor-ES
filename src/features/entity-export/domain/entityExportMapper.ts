@@ -6,6 +6,7 @@ import {
     mapPaPersonsExport,
     mapPaPhonesExport,
     mapPaTitlesExport,
+    mapPaTitlesWithHotExport,
     mapPaWaitTitlesLocationsExport,
     mapPaWaitTitlesLocationsValues,
 } from './paEntityExportMapper'
@@ -27,6 +28,7 @@ export interface ExportLocation {
 
 export interface EntityExportCsvs {
     titlesCsv: string
+    titlesWithHotCsv: string
     personsCsv: string
     locationsCsv: string
     phonesCsv: string
@@ -88,6 +90,7 @@ export function mapWaitTitlesLocationsToExportCsv(titles: string[], locations: s
 export function mapEntitiesStateToExportCsvs(state: EntitiesState): EntityExportCsvs {
     return {
         titlesCsv: mapPaTitlesExport(state),
+        titlesWithHotCsv: mapPaTitlesWithHotExport(state),
         personsCsv: mapPaPersonsExport(state),
         locationsCsv: mapPaLocationsExport(state),
         phonesCsv: mapPaPhonesExport(state),

@@ -2,6 +2,7 @@
 import type { EntitiesState, EntityType } from '../domain/entities'
 import type { SelectedEntity } from '../domain/csv.types'
 import type { EditorViewType } from '../domain/editorViewTypes'
+import type { PlateauTitleListItem } from '../domain/plateauTitleList'
 
 export type OnAirMap = Partial<Record<EntityType, string>>
 
@@ -50,6 +51,11 @@ export type CsvAction =
     | { type: 'ENTITY_ADD'; payload: { sectionId: string; entityType: EntityType; data: Record<string, unknown> } }
     | { type: 'ENTITY_UPDATE'; payload: { sectionId: string; entityType: EntityType; id: string; data: Record<string, unknown> } }
     | { type: 'ENTITY_DELETE'; payload: { sectionId: string; entityType: EntityType; id: string } }
+
+    // PLATOU > Titles mixed list ops
+    | { type: 'TITLE_DIVIDER_ADD'; payload: { sectionId: string; id: string } }
+    | { type: 'TITLE_DIVIDER_DELETE'; payload: { sectionId: string; id: string } }
+    | { type: 'TITLE_LIST_REORDER'; payload: { sectionId: string; items: PlateauTitleListItem[] } }
 
     | { type: 'ENTITY_CLEAR_ALL'; payload: EntitiesState }
 

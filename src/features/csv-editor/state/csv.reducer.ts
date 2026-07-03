@@ -5,6 +5,7 @@ import { EntityTypes } from '../domain/entities'
 import type { CsvSection, SectionRow, Person, SimpleTitle, Location, EntityType } from '../domain/entities'
 import { createBetaSection, createInvitedSection } from '../domain/entities'
 import { isEditorViewType } from '../domain/editorViewTypes'
+import { createTitleDivider, renumberPlateauTitles, type PlateauTitleListItem } from '../domain/plateauTitleList'
 
 function getActiveViewType(state: CsvState) {
     return isEditorViewType(state.activeViewType)
@@ -272,6 +273,83 @@ function deleteEntityInSection(section: CsvSection, entityType: EntityType, id: 
     return { ...section, rows }
 }
 
+function getPlateauTitleListItems(rows: SectionRow[]): PlateauTitleListItem[] {
+    return rows.flatMap((row) => {
+        if (row.title) return [{ type: 'title', rowId: row.id } satisfies PlateauTitleListItem]
+        if (row.titleDivider) return [row.titleDivider]
+        return []
+    })
+}
+
+function renumberPlateauTitleRows(rows: SectionRow[]): SectionRow[] {
+    const numbers = renumberPlateauTitles(getPlateauTitleListItems(rows))
+
+    return rows.map((row) => {
+        const number = numbers.get(row.id)
+        if (!row.title || number === undefined) return row
+
+        return {
+            ...row,
+            title: {
+                ...row.title,
+                nr: String(number),
+            },
+        }
+    })
+}
+
+function updateInvitedTitleListSection(
+    state: CsvState,
+    sectionId: string,
+    updateRows: (rows: SectionRow[]) => SectionRow[]
+): CsvState {
+    const section = state.entities.sections.find((candidate) => candidate.id === sectionId)
+
+    if (!section || section.kind !== 'invited') {
+        return state
+    }
+
+    const sections = state.entities.sections.map((candidate) => {
+        if (candidate.id !== sectionId) return candidate
+
+        return {
+            ...candidate,
+            rows: renumberPlateauTitleRows(updateRows(candidate.rows)),
+        }
+    })
+
+    return {
+        ...state,
+        entities: { sections },
+    }
+}
+
+function reorderPlateauTitleRows(rows: SectionRow[], items: PlateauTitleListItem[]): SectionRow[] {
+    const titleRowsById = new Map(
+        rows.flatMap((row) => row.title ? [[row.id, row] as const] : [])
+    )
+    const dividerRowsById = new Map(
+        rows.flatMap((row) => row.titleDivider ? [[row.titleDivider.id, row] as const] : [])
+    )
+    const orderedRows: SectionRow[] = []
+    const usedRowIds = new Set<string>()
+
+    for (const item of items) {
+        const row = item.type === 'title'
+            ? titleRowsById.get(item.rowId)
+            : dividerRowsById.get(item.id)
+
+        if (!row || usedRowIds.has(row.id)) continue
+
+        orderedRows.push(row)
+        usedRowIds.add(row.id)
+    }
+
+    const remainingRows = rows.filter((row) => !usedRowIds.has(row.id))
+
+    return [...orderedRows, ...remainingRows]
+}
+
 export function csvReducer(state: CsvState, action: CsvAction): CsvState {
     switch (action.type) {
         case 'CSV_LOADED': {
@@ -413,6 +491,33 @@ export function csvReducer(state: CsvState, action: CsvAction): CsvState {
                 onAir: nextOnAir,
             }
         }
+
+        case 'TITLE_DIVIDER_ADD':
+            return updateInvitedTitleListSection(
+                state,
+                action.payload.sectionId,
+                (rows) => [
+                    ...rows,
+                    {
+                        id: action.payload.id,
+                        titleDivider: createTitleDivider(action.payload.id),
+                    },
+                ]
+            )
+
+        case 'TITLE_DIVIDER_DELETE':
+            return updateInvitedTitleListSection(
+                state,
+                action.payload.sectionId,
+                (rows) => rows.filter((row) => row.titleDivider?.id !== action.payload.id)
+            )
+
+        case 'TITLE_LIST_REORDER':
+            return updateInvitedTitleListSection(
+                state,
+                action.payload.sectionId,
+                (rows) => reorderPlateauTitleRows(rows, action.payload.items)
+            )
 
         case 'ENTITY_CLEAR_ALL':
             return {

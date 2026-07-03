@@ -16,6 +16,24 @@ export function mapPaTitlesExport(state: EntitiesState): string {
     const rows: Record<string, string>[] = []
 
     for (const section of state.sections) {
+        rows.push({ Nr: getSectionMarker(section), Titlu: '' })
+        const titles = section.rows.flatMap((row) => row.title ? [row.title] : [])
+
+        for (let index = 0; index < titles.length; index += 1) {
+            rows.push({
+                Nr: String(index + 1),
+                Titlu: titles[index].title,
+            })
+        }
+    }
+
+    return serializeEntityCsv(['Nr', 'Titlu'], rows)
+}
+
+export function mapPaTitlesWithHotExport(state: EntitiesState): string {
+    const rows: Record<string, string>[] = []
+
+    for (const section of state.sections) {
         rows.push({ Nr: getSectionMarker(section), Titlu: '', 'Ultima Ora': '' })
         const titles = section.rows.flatMap((row) => row.title ? [row.title] : [])
         const hotTitles = section.kind === 'invited'

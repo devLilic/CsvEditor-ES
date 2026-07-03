@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { EntitiesState, CsvSection, SectionRow, SimpleTitle, Person, Location } from '../domain/entities'
 import { createBetaSection, createInvitedSection } from '../domain/entities'
 import { isInvitedMarker, parseBetaMarker } from '../domain/csv.schema'
+import { createTitleDivider, isTitleDividerMarker } from '../domain/plateauTitleList'
 
 export const CSV_COLUMNS = {
     TITLE_NR: 'Nr',
@@ -63,6 +64,15 @@ function buildRowFromCsv(row: CsvRowRaw, sectionKind: CsvSection['kind']): Omit<
     }
 
     const out: Omit<SectionRow, 'id'> = {}
+
+    if (nr === '' && isTitleDividerMarker(titleText)) {
+        if (sectionKind === 'invited') {
+            out.titleDivider = createTitleDivider(uuidv4()) as SectionRow['titleDivider']
+            return out
+        }
+
+        return null
+    }
 
     if (titleText !== '') {
         const t: SimpleTitle = { id: uuidv4(), nr, title: titleText }

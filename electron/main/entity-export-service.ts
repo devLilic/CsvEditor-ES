@@ -11,7 +11,7 @@ import type { EntityExportPaths } from '../../src/features/entity-export/domain/
 const fsp = fs.promises
 const DEFAULT_RETRY_COUNT = 3
 
-export type EntityExportKind = 'titles' | 'persons' | 'locations' | 'phones' | 'waitTitlesLocations'
+export type EntityExportKind = 'titles' | 'titlesWithHot' | 'persons' | 'locations' | 'phones' | 'waitTitlesLocations'
 
 export interface EntityExportError {
     kind: EntityExportKind
@@ -57,6 +57,8 @@ function getPathForKind(paths: EntityExportPaths, kind: EntityExportKind): strin
     switch (kind) {
         case 'titles':
             return paths.titlesPath
+        case 'titlesWithHot':
+            return paths.titlesWithHotPath
         case 'persons':
             return paths.personsPath
         case 'locations':
@@ -72,6 +74,8 @@ function getCsvForKind(csvs: EntityExportCsvs, kind: EntityExportKind): string {
     switch (kind) {
         case 'titles':
             return csvs.titlesCsv
+        case 'titlesWithHot':
+            return csvs.titlesWithHotCsv
         case 'persons':
             return csvs.personsCsv
         case 'locations':
@@ -168,7 +172,7 @@ export async function exportSingleEntityCsv(input: ExportSingleEntityCsvInput): 
 }
 
 export async function exportEntityCsvFiles(input: ExportEntityCsvFilesInput): Promise<EntityExportResult> {
-    for (const kind of ['titles', 'persons', 'locations', 'phones', 'waitTitlesLocations'] satisfies EntityExportKind[]) {
+    for (const kind of ['titles', 'titlesWithHot', 'persons', 'locations', 'phones', 'waitTitlesLocations'] satisfies EntityExportKind[]) {
         const result = await exportSingleEntityCsv({
             kind,
             paths: input.paths,
