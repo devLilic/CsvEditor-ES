@@ -17,6 +17,7 @@ const csvHooks = vi.hoisted(() => ({
         | 'waitLocations',
     getBlockItems: vi.fn(),
     deleteEntity: vi.fn(),
+    deletePlateauTitleDivider: vi.fn(),
     select: vi.fn(),
     isSelected: vi.fn(() => false),
     isOnAir: vi.fn(() => false),
@@ -34,6 +35,7 @@ vi.mock('@/features/csv-editor', async (importOriginal) => {
             activeSection: { id: csvHooks.activeSectionId, kind: 'invited', rows: [] },
             getBlockItems: csvHooks.getBlockItems,
             deleteEntity: csvHooks.deleteEntity,
+            deletePlateauTitleDivider: csvHooks.deletePlateauTitleDivider,
         }),
         useActiveEntityType: () => ({
             activeViewType: csvHooks.activeEntityType,
@@ -56,6 +58,8 @@ beforeEach(() => {
     csvHooks.activeEntityType = 'titles'
     csvHooks.getBlockItems.mockReset()
     csvHooks.deleteEntity.mockClear()
+    csvHooks.deletePlateauTitleDivider.mockReset()
+    csvHooks.deletePlateauTitleDivider.mockResolvedValue({ ok: true })
     csvHooks.select.mockClear()
     csvHooks.isSelected.mockClear()
     csvHooks.isSelected.mockReturnValue(false)
@@ -126,7 +130,7 @@ function phoneCallsItems() {
 describe('EntityList', () => {
     it('renders titles', () => {
         csvHooks.getBlockItems.mockReturnValue([
-            { entityType: 'titles', id: 'title-1', data: { title: 'BREAKING NEWS' } },
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'BREAKING NEWS' } },
         ])
 
         renderEntityList()
@@ -134,6 +138,62 @@ describe('EntityList', () => {
         expect(csvHooks.getBlockItems).toHaveBeenCalledWith('invited-1', 'titles')
         expect(screen.getByText('BREAKING NEWS')).toBeInTheDocument()
         expect(screen.getByText('1.')).toBeInTheDocument()
+    })
+
+    it('renders title dividers in the exact mixed title-list position without numbering or title selection', async () => {
+        const user = userEvent.setup()
+        csvHooks.getBlockItems.mockReturnValue([
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'FIRST TITLE' } },
+            { type: 'divider', id: 'divider-1' },
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'SECOND TITLE' } },
+        ])
+
+        renderEntityList()
+
+        const renderedItems = screen.getByText('FIRST TITLE').closest('.rounded')?.children
+        expect(renderedItems?.[0]).toHaveTextContent('FIRST TITLE')
+        expect(renderedItems?.[1]).toHaveAttribute('data-testid', 'plateau-title-divider')
+        expect(renderedItems?.[2]).toHaveTextContent('SECOND TITLE')
+        expect(screen.getByText('1.')).toBeInTheDocument()
+        expect(screen.getByText('2.')).toBeInTheDocument()
+        expect(screen.queryByText('3.')).not.toBeInTheDocument()
+
+        await user.click(screen.getByTestId('plateau-title-divider'))
+
+        expect(csvHooks.select).not.toHaveBeenCalled()
+        expect(screen.queryByText('[ DIVIDER ]')).not.toBeInTheDocument()
+    })
+
+    it('deletes a title divider through the divider hook', async () => {
+        const user = userEvent.setup()
+        csvHooks.getBlockItems.mockReturnValue([
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'FIRST TITLE' } },
+            { type: 'divider', id: 'divider-1' },
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'SECOND TITLE' } },
+        ])
+
+        renderEntityList()
+        await user.click(screen.getByRole('button', { name: 'Sterge separatorul' }))
+
+        expect(csvHooks.deletePlateauTitleDivider).toHaveBeenCalledWith('divider-1')
+        expect(csvHooks.deleteEntity).not.toHaveBeenCalled()
+        expect(csvHooks.select).not.toHaveBeenCalled()
+    })
+
+    it('keeps a divider visible and shows an alert when divider deletion fails', async () => {
+        const user = userEvent.setup()
+        csvHooks.deletePlateauTitleDivider.mockResolvedValueOnce({ ok: false, error: 'WRITE_FAILED' })
+        csvHooks.getBlockItems.mockReturnValue([
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'FIRST TITLE' } },
+            { type: 'divider', id: 'divider-1' },
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'SECOND TITLE' } },
+        ])
+
+        renderEntityList()
+        await user.click(screen.getByRole('button', { name: 'Sterge separatorul' }))
+
+        expect(screen.getByTestId('plateau-title-divider')).toBeInTheDocument()
+        expect(await screen.findByRole('alert')).toHaveTextContent('WRITE_FAILED')
     })
 
     it('persons view renders persons without image', () => {

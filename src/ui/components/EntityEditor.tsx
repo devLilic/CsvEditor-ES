@@ -43,7 +43,15 @@ function isEntityTypeAllowedInSection(entityType: EntityType, sectionKind?: stri
 }
 
 export function EntityEditor() {
-    const { activeSectionId, activeSection, getBlockItems, addEntity, updateEntity, savePersonEntity } = useEntities()
+    const {
+        activeSectionId,
+        activeSection,
+        getBlockItems,
+        addEntity,
+        updateEntity,
+        savePersonEntity,
+        addPlateauTitleDivider,
+    } = useEntities()
 
     const { selected, clearSelection } = useSelectedEntity()
     const { activeEntityType, setActiveEntityType } = useActiveEntityType()
@@ -57,6 +65,8 @@ export function EntityEditor() {
     const [phoneImageSettings, setPhoneImageSettings] = useState<PhoneImageSettings>(FALLBACK_PHONE_IMAGE_SETTINGS)
     const [phoneImageError, setPhoneImageError] = useState<string | null>(null)
     const [phoneImageModalOpen, setPhoneImageModalOpen] = useState(false)
+    const [dividerError, setDividerError] = useState('')
+    const [isAddingDivider, setIsAddingDivider] = useState(false)
     const [quickTitleDialog, setQuickTitleDialog] = useState({
         open: false,
         initialValue: '',
@@ -224,6 +234,34 @@ export function EntityEditor() {
             case 'waitTitles':
             default:
                 return Boolean(form.title?.trim())
+        }
+    }
+
+    const canAddTitleDivider =
+        activeSection?.kind === 'invited' &&
+        activeEntityType === 'titles' &&
+        editorEntityType === 'titles'
+
+    const addTitleDivider = async () => {
+        if (!canAddTitleDivider || isAddingDivider) return
+
+        setDividerError('')
+        setIsAddingDivider(true)
+
+        try {
+            const selectedTitleRowId =
+                selected?.sectionId === sectionId && selected.entityType === 'titles'
+                    ? (selectedItem as any)?.rowId
+                    : undefined
+            const result = selectedTitleRowId
+                ? await addPlateauTitleDivider({ afterItemId: selectedTitleRowId })
+                : await addPlateauTitleDivider()
+
+            if (!result.ok) {
+                setDividerError(result.error ?? 'TITLE_DIVIDER_SAVE_FAILED')
+            }
+        } finally {
+            setIsAddingDivider(false)
         }
     }
 
@@ -410,15 +448,35 @@ export function EntityEditor() {
                 )}
             </div>
 
-            <button
-                onClick={saveEntity}
-                disabled={!isFormValid()}
-                className={`py-2 rounded text-white ${
-                    isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-                } shrink-0`}
-            >
-                {selected ? 'Update' : 'Adaugă'}
-            </button>
+            <div className="flex flex-col gap-2 shrink-0">
+                <button
+                    onClick={saveEntity}
+                    disabled={!isFormValid()}
+                    className={`py-2 rounded text-white ${
+                        isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                    {selected ? 'Update' : 'Adaugă'}
+                </button>
+
+                {canAddTitleDivider && (
+                    <button
+                        type="button"
+                        title="Adauga separator vizual"
+                        onClick={addTitleDivider}
+                        disabled={isAddingDivider}
+                        className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        Separator
+                    </button>
+                )}
+
+                {dividerError && (
+                    <div role="alert" className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        {dividerError}
+                    </div>
+                )}
+            </div>
 
             {/* QuickTitles doar la TITLES */}
             {editorEntityType === 'titles' && (

@@ -1,9 +1,11 @@
 // src/features/csv-editor/hooks/useEntities.ts
 import { useCallback, useMemo } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { useCsvContext } from '../context/CsvContext'
 import { csvReducer } from '../state/csv.reducer'
 import type { EntityType, CsvSection, SimpleTitle, Person, Location, SectionRow } from '../domain/entities'
 import type { SelectedEntity } from '../domain/csv.types'
+import type { PlateauTitleListItem } from '../domain/plateauTitleList'
 import { isSupportedEntityType } from '../domain/supportedEntityTypes'
 import { isPhoneCallPerson } from '../domain/phoneCall'
 import { createDefaultProjectEntities } from '../domain/defaultProject'
@@ -15,7 +17,8 @@ import { serializeCsv } from '../utils/csvSerializer'
 import * as quickTitlesCsvStorageService from '../../quick-titles/services/quickTitlesCsvStorageService'
 
 type BlockItem =
-    | { entityType: 'titles'; id: string; rowId: string; data: SimpleTitle }
+    | { type: 'title'; entityType: 'titles'; id: string; rowId: string; data: SimpleTitle }
+    | { type: 'divider'; id: string }
     | { entityType: 'persons'; id: string; rowId: string; data: Person }
     | { entityType: 'locations'; id: string; rowId: string; data: Location }
     | { entityType: 'hotTitles'; id: string; rowId: string; data: SimpleTitle }
@@ -35,11 +38,16 @@ export type SavePersonResult =
     | { ok: true }
     | { ok: false; error?: string }
 
+export type PlateauTitleDividerResult =
+    | { ok: true; dividerId?: string }
+    | { ok: false; error?: string }
+
 function rowsToBlockItems(section: CsvSection, entityType: EntityType): BlockItem[] {
     const out: BlockItem[] = []
 
     for (const r of section.rows) {
-        if (entityType === 'titles' && r.title) out.push({ entityType: 'titles', id: r.title.id, rowId: r.id, data: r.title })
+        if (entityType === 'titles' && r.title) out.push({ type: 'title', entityType: 'titles', id: r.title.id, rowId: r.id, data: r.title })
+        if (section.kind === 'invited' && entityType === 'titles' && r.titleDivider) out.push({ type: 'divider', id: r.titleDivider.id })
         if (entityType === 'persons' && r.person && !isPhoneCallPerson(r.person)) out.push({ entityType: 'persons', id: r.person.id, rowId: r.id, data: r.person })
         if (section.kind === 'invited' && entityType === 'phoneCalls' && r.person && isPhoneCallPerson(r.person)) out.push({ entityType: 'persons', id: r.person.id, rowId: r.id, data: r.person })
         if (section.kind === 'invited' && entityType === 'locations' && r.location) out.push({ entityType: 'locations', id: r.location.id, rowId: r.id, data: r.location })
@@ -49,6 +57,53 @@ function rowsToBlockItems(section: CsvSection, entityType: EntityType): BlockIte
     }
 
     return out
+}
+
+function rowsToPlateauTitleListItems(rows: SectionRow[]): PlateauTitleListItem[] {
+    return rows.flatMap((row) => {
+        if (row.title) return [{ type: 'title', rowId: row.id } satisfies PlateauTitleListItem]
+        if (row.titleDivider) return [row.titleDivider]
+        return []
+    })
+}
+
+function matchesPlateauTitleListItem(row: SectionRow, item: PlateauTitleListItem, itemId: string): boolean {
+    if (item.type === 'title') {
+        return item.rowId === itemId || row.id === itemId || row.title?.id === itemId
+    }
+
+    return item.id === itemId || row.id === itemId
+}
+
+function insertDividerItem(
+    rows: SectionRow[],
+    dividerId: string,
+    afterItemId?: string
+): PlateauTitleListItem[] {
+    const items = rowsToPlateauTitleListItems(rows)
+    const dividerItem: PlateauTitleListItem = { type: 'divider', id: dividerId }
+
+    if (!afterItemId) {
+        return [...items, dividerItem]
+    }
+
+    const insertIndex = items.findIndex((item) => {
+        const row = item.type === 'title'
+            ? rows.find((candidate) => candidate.id === item.rowId)
+            : rows.find((candidate) => candidate.titleDivider?.id === item.id)
+
+        return row ? matchesPlateauTitleListItem(row, item, afterItemId) : false
+    })
+
+    if (insertIndex < 0) {
+        return [...items, dividerItem]
+    }
+
+    return [
+        ...items.slice(0, insertIndex + 1),
+        dividerItem,
+        ...items.slice(insertIndex + 1),
+    ]
 }
 
 export function useEntities() {
@@ -180,6 +235,91 @@ export function useEntities() {
         [dispatch]
     )
 
+    const canModifyPlateauTitleDividers = useCallback(() => {
+        if (state.activeViewType !== 'titles') return null
+
+        const sectionId = state.activeSectionId
+        if (!sectionId) return null
+
+        const section = state.entities.sections.find((candidate) => candidate.id === sectionId)
+        if (!section || section.kind !== 'invited') return null
+
+        return section
+    }, [state.activeSectionId, state.activeViewType, state.entities.sections])
+
+    const writeDividerChange = useCallback(async (
+        nextState: typeof state,
+        errorPrefix: string
+    ): Promise<PlateauTitleDividerResult> => {
+        const writeRes = await csvService.write(serializeCsv(nextState.entities))
+        if (!writeRes.ok) {
+            console.error(errorPrefix, writeRes.error)
+            return { ok: false, error: writeRes.error ?? 'WRITE_FAILED' }
+        }
+
+        return { ok: true }
+    }, [])
+
+    const addPlateauTitleDivider = useCallback(async (options?: {
+        afterItemId?: string
+    }): Promise<PlateauTitleDividerResult> => {
+        const section = canModifyPlateauTitleDividers()
+        if (!section) {
+            return { ok: false, error: 'TITLE_DIVIDER_NOT_ALLOWED' }
+        }
+
+        const dividerId = uuidv4()
+        const addAction = {
+            type: 'TITLE_DIVIDER_ADD' as const,
+            payload: { sectionId: section.id, id: dividerId },
+        }
+        const addedState = csvReducer(state, addAction)
+        if (addedState === state) {
+            return { ok: false, error: 'TITLE_DIVIDER_NOT_SAVED' }
+        }
+
+        const orderedItems = insertDividerItem(section.rows, dividerId, options?.afterItemId)
+        const reorderAction = {
+            type: 'TITLE_LIST_REORDER' as const,
+            payload: { sectionId: section.id, items: orderedItems },
+        }
+        const nextState = csvReducer(addedState, reorderAction)
+
+        const writeResult = await writeDividerChange(nextState, 'Failed to save title divider:')
+        if (!writeResult.ok) return writeResult
+
+        dispatch(addAction)
+        dispatch(reorderAction)
+
+        return { ok: true, dividerId }
+    }, [canModifyPlateauTitleDividers, dispatch, state, writeDividerChange])
+
+    const deletePlateauTitleDivider = useCallback(async (
+        dividerId: string
+    ): Promise<PlateauTitleDividerResult> => {
+        const section = canModifyPlateauTitleDividers()
+        if (!section) {
+            return { ok: false, error: 'TITLE_DIVIDER_NOT_ALLOWED' }
+        }
+
+        if (!section.rows.some((row) => row.titleDivider?.id === dividerId)) {
+            return { ok: false, error: 'TITLE_DIVIDER_NOT_FOUND' }
+        }
+
+        const action = {
+            type: 'TITLE_DIVIDER_DELETE' as const,
+            payload: { sectionId: section.id, id: dividerId },
+        }
+        const nextState = csvReducer(state, action)
+
+        const writeResult = await writeDividerChange(nextState, 'Failed to delete title divider:')
+        if (!writeResult.ok) return writeResult
+
+        dispatch(action)
+
+        return { ok: true }
+    }, [canModifyPlateauTitleDividers, dispatch, state, writeDividerChange])
+
     const resetToDefaultProject = useCallback(async (): Promise<ForceStartNewProjectWithoutBackupResult> => {
         const defaultProjectSettings = await defaultProjectSettingsService
             .getDefaultProjectSettings()
@@ -274,6 +414,8 @@ export function useEntities() {
         updateEntity,
         savePersonEntity,
         deleteEntity,
+        addPlateauTitleDivider,
+        deletePlateauTitleDivider,
 
         // global ops
         startNewProject,

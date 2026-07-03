@@ -1,5 +1,5 @@
 // src/ui/components/EntityList.tsx
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
     useEntities,
     useSelectedEntity,
@@ -9,11 +9,12 @@ import {
 } from '@/features/csv-editor'
 import type { EntityType } from '@/features/csv-editor'
 import { EmptyState } from './common/EmptyState'
+import { PlateauTitleDivider } from './titles/PlateauTitleDivider'
 import { useEditMode } from '@/ui/context/EditModeContext'
 import { useTitleFilter } from '@/ui/context/TitleFilterContext'
 
 export function EntityList() {
-    const { activeSectionId, activeSection, getBlockItems, deleteEntity } =
+    const { activeSectionId, activeSection, getBlockItems, deleteEntity, deletePlateauTitleDivider } =
         useEntities()
 
     const { activeEntityType } = useActiveEntityType()
@@ -21,6 +22,8 @@ export function EntityList() {
     const { isOnAir, setOnAir, clearOnAir } = useOnAir()
     const { editMode } = useEditMode()
     const { titleFilter } = useTitleFilter()
+    const [dividerDeleteError, setDividerDeleteError] = useState('')
+    const [deletingDividerId, setDeletingDividerId] = useState<string | null>(null)
 
     const sectionId = activeSectionId ?? activeSection?.id ?? ''
     const supportedEntityType = isSupportedEntityType(activeEntityType)
@@ -40,6 +43,7 @@ export function EntityList() {
         }
 
         return items.filter((item: any) =>
+            item.type !== 'divider' &&
             (item.data?.title ?? '')
                 .toLocaleLowerCase()
                 .includes(normalizedTitleFilter)
@@ -61,11 +65,45 @@ export function EntityList() {
     }
 
     const showNr = supportedEntityType === 'titles'
+    const titleNumberById = new Map<string, number>()
+    items.forEach((item: any) => {
+        if (item.type === 'divider' || item.entityType !== 'titles') return
+        titleNumberById.set(item.id, titleNumberById.size + 1)
+    })
+
+    const handleDeleteDivider = async (dividerId: string) => {
+        setDividerDeleteError('')
+        setDeletingDividerId(dividerId)
+
+        const result = await deletePlateauTitleDivider(dividerId)
+
+        setDeletingDividerId(null)
+        if (!result.ok) {
+            setDividerDeleteError(result.error ?? 'TITLE_DIVIDER_DELETE_FAILED')
+        }
+    }
 
     return (
         <div className="h-full min-h-0 overflow-y-auto">
+            {dividerDeleteError && (
+                <div role="alert" className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {dividerDeleteError}
+                </div>
+            )}
             <div className="rounded border bg-white">
                 {filteredItems.map((item: any) => {
+                    if (item.type === 'divider') {
+                        return (
+                            <PlateauTitleDivider
+                                key={item.id}
+                                dividerId={item.id}
+                                canDelete
+                                isDeleting={deletingDividerId === item.id}
+                                onDelete={handleDeleteDivider}
+                            />
+                        )
+                    }
+
                     const selected = isSelected(
                         sectionId,
                         item.entityType as EntityType,
@@ -78,7 +116,7 @@ export function EntityList() {
                     const isPersons = item.entityType === 'persons'
 
                     const displayNr = isTitle
-                        ? items.findIndex((listItem: any) => listItem.id === item.id) + 1
+                        ? titleNumberById.get(item.id) ?? null
                         : null
 
                     const mainText = isPersons
