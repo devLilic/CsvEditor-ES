@@ -53,7 +53,7 @@ export type CsvAction =
     | { type: 'ENTITY_DELETE'; payload: { sectionId: string; entityType: EntityType; id: string } }
 
     // PLATOU > Titles mixed list ops
-    | { type: 'TITLE_DIVIDER_ADD'; payload: { sectionId: string; id: string } }
+    | { type: 'TITLE_DIVIDER_ADD'; payload: { sectionId: string; id: string; insertIndex?: number } }
     | { type: 'TITLE_DIVIDER_DELETE'; payload: { sectionId: string; id: string } }
     | { type: 'TITLE_LIST_REORDER'; payload: { sectionId: string; items: PlateauTitleListItem[] } }
 

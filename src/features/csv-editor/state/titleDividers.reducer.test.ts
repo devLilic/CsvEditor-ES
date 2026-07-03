@@ -59,6 +59,24 @@ describe('csvReducer PLATOU title dividers', () => {
         expect(nextState).toBe(state)
     })
 
+    it('rejects adding a divider after an existing divider', () => {
+        const state = stateWithSections([
+            invitedSection({
+                rows: [
+                    { id: 'title-row-1', title: { id: 'title-1', title: 'Titlu 1' } },
+                    { id: 'divider-row-1', titleDivider: createTitleDivider('divider-1') },
+                ],
+            }),
+        ])
+
+        const nextState = csvReducer(state, {
+            type: 'TITLE_DIVIDER_ADD',
+            payload: { sectionId: 'invited-1', id: 'divider-2' },
+        })
+
+        expect(nextState).toBe(state)
+    })
+
     it('deletes a divider without deleting titles', () => {
         const state = stateWithSections([
             invitedSection({
@@ -172,5 +190,35 @@ describe('csvReducer PLATOU title dividers', () => {
         })
 
         expect(nextState.entities.sections[0].rows.flatMap((row) => row.title?.nr ?? [])).toEqual(['1', '2', '3'])
+    })
+
+    it('rejects reorder that would place two dividers consecutively', () => {
+        const state = stateWithSections([
+            invitedSection({
+                rows: [
+                    { id: 'title-row-1', title: { id: 'title-1', title: 'Titlu 1' } },
+                    { id: 'divider-row-1', titleDivider: createTitleDivider('divider-1') },
+                    { id: 'title-row-2', title: { id: 'title-2', title: 'Titlu 2' } },
+                    { id: 'divider-row-2', titleDivider: createTitleDivider('divider-2') },
+                    { id: 'title-row-3', title: { id: 'title-3', title: 'Titlu 3' } },
+                ],
+            }),
+        ])
+
+        const nextState = csvReducer(state, {
+            type: 'TITLE_LIST_REORDER',
+            payload: {
+                sectionId: 'invited-1',
+                items: [
+                    { type: 'title', rowId: 'title-row-1' },
+                    { type: 'divider', id: 'divider-1' },
+                    { type: 'divider', id: 'divider-2' },
+                    { type: 'title', rowId: 'title-row-2' },
+                    { type: 'title', rowId: 'title-row-3' },
+                ],
+            },
+        })
+
+        expect(nextState).toBe(state)
     })
 })

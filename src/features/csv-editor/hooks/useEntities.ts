@@ -5,7 +5,7 @@ import { useCsvContext } from '../context/CsvContext'
 import { csvReducer } from '../state/csv.reducer'
 import type { EntityType, CsvSection, SimpleTitle, Person, Location, SectionRow } from '../domain/entities'
 import type { SelectedEntity } from '../domain/csv.types'
-import type { PlateauTitleListItem } from '../domain/plateauTitleList'
+import { canInsertDividerAt, type PlateauTitleListItem } from '../domain/plateauTitleList'
 import { isSupportedEntityType } from '../domain/supportedEntityTypes'
 import { isPhoneCallPerson } from '../domain/phoneCall'
 import { createDefaultProjectEntities } from '../domain/defaultProject'
@@ -42,6 +42,8 @@ export type PlateauTitleDividerResult =
     | { ok: true; dividerId?: string }
     | { ok: false; error?: string }
 
+const CONSECUTIVE_TITLE_DIVIDERS_ERROR = 'Nu pot fi adăugate două separatoare consecutive.'
+
 function rowsToBlockItems(section: CsvSection, entityType: EntityType): BlockItem[] {
     const out: BlockItem[] = []
 
@@ -75,16 +77,11 @@ function matchesPlateauTitleListItem(row: SectionRow, item: PlateauTitleListItem
     return item.id === itemId || row.id === itemId
 }
 
-function insertDividerItem(
-    rows: SectionRow[],
-    dividerId: string,
-    afterItemId?: string
-): PlateauTitleListItem[] {
+function getDividerInsertIndex(rows: SectionRow[], afterItemId?: string): number {
     const items = rowsToPlateauTitleListItems(rows)
-    const dividerItem: PlateauTitleListItem = { type: 'divider', id: dividerId }
 
     if (!afterItemId) {
-        return [...items, dividerItem]
+        return items.length
     }
 
     const insertIndex = items.findIndex((item) => {
@@ -95,15 +92,7 @@ function insertDividerItem(
         return row ? matchesPlateauTitleListItem(row, item, afterItemId) : false
     })
 
-    if (insertIndex < 0) {
-        return [...items, dividerItem]
-    }
-
-    return [
-        ...items.slice(0, insertIndex + 1),
-        dividerItem,
-        ...items.slice(insertIndex + 1),
-    ]
+    return insertIndex < 0 ? items.length : insertIndex + 1
 }
 
 export function useEntities() {
@@ -268,28 +257,26 @@ export function useEntities() {
             return { ok: false, error: 'TITLE_DIVIDER_NOT_ALLOWED' }
         }
 
+        const insertIndex = getDividerInsertIndex(section.rows, options?.afterItemId)
+        const currentItems = rowsToPlateauTitleListItems(section.rows)
+        if (!canInsertDividerAt(currentItems, insertIndex)) {
+            return { ok: false, error: CONSECUTIVE_TITLE_DIVIDERS_ERROR }
+        }
+
         const dividerId = uuidv4()
         const addAction = {
             type: 'TITLE_DIVIDER_ADD' as const,
-            payload: { sectionId: section.id, id: dividerId },
+            payload: { sectionId: section.id, id: dividerId, insertIndex },
         }
-        const addedState = csvReducer(state, addAction)
-        if (addedState === state) {
+        const nextState = csvReducer(state, addAction)
+        if (nextState === state) {
             return { ok: false, error: 'TITLE_DIVIDER_NOT_SAVED' }
         }
-
-        const orderedItems = insertDividerItem(section.rows, dividerId, options?.afterItemId)
-        const reorderAction = {
-            type: 'TITLE_LIST_REORDER' as const,
-            payload: { sectionId: section.id, items: orderedItems },
-        }
-        const nextState = csvReducer(addedState, reorderAction)
 
         const writeResult = await writeDividerChange(nextState, 'Failed to save title divider:')
         if (!writeResult.ok) return writeResult
 
         dispatch(addAction)
-        dispatch(reorderAction)
 
         return { ok: true, dividerId }
     }, [canModifyPlateauTitleDividers, dispatch, state, writeDividerChange])

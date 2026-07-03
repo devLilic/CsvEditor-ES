@@ -5,7 +5,7 @@ import { EntityTypes } from '../domain/entities'
 import type { CsvSection, SectionRow, Person, SimpleTitle, Location, EntityType } from '../domain/entities'
 import { createBetaSection, createInvitedSection } from '../domain/entities'
 import { isEditorViewType } from '../domain/editorViewTypes'
-import { createTitleDivider, renumberPlateauTitles, type PlateauTitleListItem } from '../domain/plateauTitleList'
+import { canInsertDividerAt, createTitleDivider, renumberPlateauTitles, type PlateauTitleListItem } from '../domain/plateauTitleList'
 
 function getActiveViewType(state: CsvState) {
     return isEditorViewType(state.activeViewType)
@@ -298,6 +298,10 @@ function renumberPlateauTitleRows(rows: SectionRow[]): SectionRow[] {
     })
 }
 
+function hasConsecutivePlateauTitleDividers(items: PlateauTitleListItem[]): boolean {
+    return items.some((item, index) => item.type === 'divider' && items[index + 1]?.type === 'divider')
+}
+
 function updateInvitedTitleListSection(
     state: CsvState,
     sectionId: string,
@@ -492,18 +496,35 @@ export function csvReducer(state: CsvState, action: CsvAction): CsvState {
             }
         }
 
-        case 'TITLE_DIVIDER_ADD':
+        case 'TITLE_DIVIDER_ADD': {
+            const section = state.entities.sections.find((candidate) => candidate.id === action.payload.sectionId)
+            const items = section?.kind === 'invited' ? getPlateauTitleListItems(section.rows) : []
+            const insertIndex = action.payload.insertIndex ?? items.length
+
+            if (!section || section.kind !== 'invited' || !canInsertDividerAt(items, insertIndex)) {
+                return state
+            }
+            const dividerItem = createTitleDivider(action.payload.id)
+            const nextItems = [
+                ...items.slice(0, insertIndex),
+                dividerItem,
+                ...items.slice(insertIndex),
+            ]
+            const rowsWithDivider = [
+                ...section.rows,
+                {
+                    id: action.payload.id,
+                    titleDivider: dividerItem,
+                },
+            ]
+            const nextRows = reorderPlateauTitleRows(rowsWithDivider, nextItems)
+
             return updateInvitedTitleListSection(
                 state,
                 action.payload.sectionId,
-                (rows) => [
-                    ...rows,
-                    {
-                        id: action.payload.id,
-                        titleDivider: createTitleDivider(action.payload.id),
-                    },
-                ]
+                () => nextRows
             )
+        }
 
         case 'TITLE_DIVIDER_DELETE':
             return updateInvitedTitleListSection(
@@ -512,12 +533,23 @@ export function csvReducer(state: CsvState, action: CsvAction): CsvState {
                 (rows) => rows.filter((row) => row.titleDivider?.id !== action.payload.id)
             )
 
-        case 'TITLE_LIST_REORDER':
+        case 'TITLE_LIST_REORDER': {
+            const section = state.entities.sections.find((candidate) => candidate.id === action.payload.sectionId)
+            if (!section || section.kind !== 'invited') {
+                return state
+            }
+
+            const nextRows = reorderPlateauTitleRows(section.rows, action.payload.items)
+            if (hasConsecutivePlateauTitleDividers(getPlateauTitleListItems(nextRows))) {
+                return state
+            }
+
             return updateInvitedTitleListSection(
                 state,
                 action.payload.sectionId,
-                (rows) => reorderPlateauTitleRows(rows, action.payload.items)
+                () => nextRows
             )
+        }
 
         case 'ENTITY_CLEAR_ALL':
             return {

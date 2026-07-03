@@ -108,6 +108,27 @@ describe('usePlateauTitleDividers operations through useEntities', () => {
         expect(result.current.items.join('|')).toMatch(/\|divider:[^|]+$/)
     })
 
+    it('refuses add when it would create consecutive dividers', async () => {
+        const writeSpy = vi.spyOn(csvService, 'write').mockResolvedValue({ ok: true })
+        const { result } = renderHook(() => useHarness(), { wrapper })
+
+        act(() => result.current.seedInvited())
+        await act(async () => {
+            await result.current.addPlateauTitleDivider({ afterItemId: 'row-title-1' })
+        })
+        let addResult: Awaited<ReturnType<typeof result.current.addPlateauTitleDivider>>
+        await act(async () => {
+            addResult = await result.current.addPlateauTitleDivider({ afterItemId: 'row-title-1' })
+        })
+
+        expect(addResult!).toEqual({
+            ok: false,
+            error: 'Nu pot fi adăugate două separatoare consecutive.',
+        })
+        expect(writeSpy).toHaveBeenCalledTimes(1)
+        expect(result.current.items.filter((item) => item.startsWith('divider:'))).toHaveLength(1)
+    })
+
     it('adds when Edit Mode is OFF because the hook has no edit-mode dependency', async () => {
         vi.spyOn(csvService, 'write').mockResolvedValue({ ok: true })
         const { result } = renderHook(() => useHarness(), { wrapper })
