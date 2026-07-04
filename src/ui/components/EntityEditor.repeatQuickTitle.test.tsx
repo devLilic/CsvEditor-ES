@@ -150,6 +150,8 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
 
         expect(titleInput()).toHaveValue('INVITAT: ')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
+        expect(screen.getByRole('button', { name: 'MODERATOR:' })).toHaveAttribute('aria-pressed', 'false')
     })
 
     it('keeps operator text typed after the QuickTitle', async () => {
@@ -170,6 +172,24 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
 
         expect(titleInput()).toHaveValue('INVITAT: ')
+    })
+
+    it('clears the active QuickTitle memory when the title input is emptied', async () => {
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
+
+        await user.clear(titleInput())
+
+        expect(titleInput()).toHaveValue('')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+
+        expect(titleInput()).toHaveValue('INVITAT: ')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
     })
 
     it('does not use the previous prefix rule for another QuickTitle', async () => {

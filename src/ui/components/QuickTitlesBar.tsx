@@ -7,6 +7,7 @@ import {useEditMode} from "@/ui/context/EditModeContext";
 interface QuickTitlesBarProps {
     onApplyPrefix: (prefix: string) => void
     focusEditor: () => void
+    activeQuickTitle?: string | null
 }
 
 export { normalizeQuickTitle }
@@ -15,6 +16,7 @@ export { normalizeQuickTitle }
 export function QuickTitlesBar({
                                    onApplyPrefix,
                                    focusEditor,
+                                   activeQuickTitle = null,
                                }: QuickTitlesBarProps) {
     const {
         quickTitles,
@@ -25,6 +27,9 @@ export function QuickTitlesBar({
 
 
     const inputRef = useRef<HTMLInputElement>(null)
+    const normalizedActiveQuickTitle = activeQuickTitle
+        ? normalizeQuickTitle(activeQuickTitle)
+        : null
 
     const handleCreate = async () => {
         const value = normalizeQuickTitle(inputRef.current?.value ?? '')
@@ -38,14 +43,25 @@ export function QuickTitlesBar({
         <div className="flex justify-between items-start items-center gap-2 flex-wrap bg-gray-50 p-2 rounded">
             <div className="flex gap-2">
                 {/* QuickTitle buttons */}
-                {quickTitles.map((qt) => (
-                    <div className="flex rounded-lg border border-blue-700 overflow-hidden" key={qt}>
+                {quickTitles.map((qt) => {
+                    const isActive = normalizeQuickTitle(qt) === normalizedActiveQuickTitle
+
+                    return (
+                    <div
+                        className={`flex rounded-lg border overflow-hidden ${
+                            isActive ? 'border-emerald-700 ring-2 ring-emerald-300' : 'border-blue-700'
+                        }`}
+                        key={qt}
+                    >
                         <button
+                            aria-pressed={isActive}
                             onClick={() => {
                                 onApplyPrefix(qt)
                                 focusEditor()
                             }}
-                            className="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"
+                            className={`px-3 py-2 rounded text-sm text-white ${
+                                isActive ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                         >
                             {qt.toUpperCase()}
                         </button>
@@ -58,7 +74,8 @@ export function QuickTitlesBar({
                             </button>
                         )}
                     </div>
-                ))}
+                    )
+                })}
             </div>
 
 

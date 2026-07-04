@@ -128,10 +128,11 @@ afterEach(() => {
 })
 
 describe('EntityEditor import titles from backup button', () => {
-    it('appears in PLATOU Titles', () => {
+    it('appears in PLATOU Titles as an icon-only button', () => {
         renderEntityEditor()
 
-        expect(screen.getByRole('button', { name: 'Importă din backup' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Importă din arhivă' })).toBeInTheDocument()
+        expect(screen.queryByText('Importă din arhivă')).not.toBeInTheDocument()
     })
 
     it('does not appear in BETA', () => {
@@ -140,7 +141,7 @@ describe('EntityEditor import titles from backup button', () => {
 
         renderEntityEditor()
 
-        expect(screen.queryByRole('button', { name: 'Importă din backup' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Importă din arhivă' })).not.toBeInTheDocument()
     })
 
     it('does not appear for Persons', () => {
@@ -148,14 +149,14 @@ describe('EntityEditor import titles from backup button', () => {
 
         renderEntityEditor()
 
-        expect(screen.queryByRole('button', { name: 'Importă din backup' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Importă din arhivă' })).not.toBeInTheDocument()
     })
 
     it('is separated from Add', () => {
         renderEntityEditor()
 
         const addButton = screen.getByRole('button', { name: /Adaug/i })
-        const importButton = screen.getByRole('button', { name: 'Importă din backup' })
+        const importButton = screen.getByRole('button', { name: 'Importă din arhivă' })
 
         expect(addButton).not.toBe(importButton)
         expect(importButton).toHaveClass('ml-6')
@@ -165,7 +166,7 @@ describe('EntityEditor import titles from backup button', () => {
         const user = userEvent.setup()
         renderEntityEditor()
 
-        await user.click(screen.getByRole('button', { name: 'Importă din backup' }))
+        await user.click(screen.getByRole('button', { name: 'Importă din arhivă' }))
 
         expect(screen.getByRole('dialog', { name: 'Import titluri din backup' })).toBeInTheDocument()
     })
