@@ -160,6 +160,7 @@ describe('useEntities startNewProject', () => {
 
     it('resets state to the default project and writes the default CSV after backup', async () => {
         const user = userEvent.setup()
+        const api = (window as any).electronAPI
         const savedSettings = {
             title: 'SAVED DEFAULT TITLE',
             personName: 'SAVED DEFAULT NAME',
@@ -208,6 +209,8 @@ describe('useEntities startNewProject', () => {
         expect(setQuickTitlesSpy).toHaveBeenCalledWith([])
         expect(backupSpy.mock.invocationCallOrder[0]).toBeLessThan(getSettingsSpy.mock.invocationCallOrder[0])
         expect(getSettingsSpy.mock.invocationCallOrder[0]).toBeLessThan(clearQuickTitlesCsvSpy.mock.invocationCallOrder[0])
+        expect(api.reserveTitleBackup).toHaveBeenCalledWith({ forceNewProject: true })
+        expect(api.reserveTitleBackup.mock.invocationCallOrder[0]).toBeLessThan(clearQuickTitlesCsvSpy.mock.invocationCallOrder[0])
         expect(clearQuickTitlesCsvSpy.mock.invocationCallOrder[0]).toBeLessThan(setQuickTitlesSpy.mock.invocationCallOrder[0])
         expect(setQuickTitlesSpy.mock.invocationCallOrder[0]).toBeLessThan(writeSpy.mock.invocationCallOrder[0])
 
@@ -349,6 +352,7 @@ describe('useEntities startNewProject', () => {
 
         expect(backupSpy).toHaveBeenCalledTimes(1)
         expect(writeSpy).not.toHaveBeenCalled()
+        expect((window as any).electronAPI.reserveTitleBackup).not.toHaveBeenCalled()
         expect(getSettingsSpy).not.toHaveBeenCalled()
         expect(clearQuickTitlesCsvSpy).not.toHaveBeenCalled()
         expect(setQuickTitlesSpy).not.toHaveBeenCalled()

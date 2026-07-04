@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { IPC_CHANNELS } from '../../src/shared/ipc-channels'
 import type { CsvFileDescriptor } from '../../src/shared/ipc-types'
-import { getAppConfig, getCsvFilePath, getCsvFileSettings, setCsvFilePath } from '../store'
+import { getAppConfig, getCsvFilePath, getCsvFileSettings, setAppConfig, setCsvFilePath } from '../store'
 import { writeCsvBackup } from './csv-backup'
 import { resolveEntityExportPaths } from '../../src/features/entity-export/domain/exportPathResolver'
 import { notifyEntityExportFailure } from './entity-export-notification'
@@ -14,7 +14,7 @@ import {
 } from '../../src/features/title-backup/services/writeActiveTitleBackup'
 import { serializeTitleBackup } from '../../src/features/title-backup/domain/titleBackupCsv'
 import { getActiveTitleBackupFile } from '../../src/features/title-backup/domain/activeTitleBackupFile'
-import { writeTitleBackupWithRetention } from './title-backup-retention'
+import { reserveTitleBackupName, writeTitleBackupWithRetention } from './title-backup-retention'
 import {
     exportEntityCsvFilesFromFullCsvContent,
     type EntityExportResult,
@@ -84,9 +84,27 @@ async function exportEntityCsvsAfterWorkingCsvWrite(
             content,
             onError: (error) => notifyEntityExportFailure(mainWindow, error),
             afterTitlesExport: async () => {
-                const activeTitleBackupFile = getActiveTitleBackupFile(getAppConfig())
+                let activeTitleBackupFile = getActiveTitleBackupFile(getAppConfig())
                 if (!activeTitleBackupFile) {
-                    return
+                    const reservation = await reserveTitleBackupName({
+                        backupFolderPath: settings.backupFolderPath,
+                        date: new Date(),
+                        store: {
+                            getConfig: getAppConfig,
+                            setConfig: setAppConfig,
+                        },
+                    })
+
+                    if (!reservation.ok) {
+                        notifyEntityExportFailure(mainWindow, {
+                            kind: 'titleBackup',
+                            filePath: settings.backupFolderPath,
+                            error: new Error(reservation.error),
+                        })
+                        return
+                    }
+
+                    activeTitleBackupFile = reservation.filename
                 }
 
                 const backupContent = serializeTitleBackup(
