@@ -13,6 +13,7 @@ import {
     useQuickTitles,
 } from '@/features/csv-editor'
 import { phoneImageSettingsService } from '@/features/csv-editor/services/phoneImageSettingsService'
+import { applyQuickTitle as applyQuickTitleToEditor } from '@/features/quick-titles/domain/applyQuickTitle'
 import { buildPersonQuickTitleSuggestion } from '@/features/quick-titles/domain/personQuickTitleSuggestion'
 import { normalizeAndDeduplicateQuickTitles } from '@/features/quick-titles/domain/quickTitle'
 import {
@@ -54,6 +55,33 @@ function DividerButtonIcon() {
     )
 }
 
+function ArchiveImportIcon() {
+    return (
+        <svg
+            aria-hidden="true"
+            viewBox="0 0 32 28"
+            className="block h-7 w-8"
+            fill="none"
+        >
+            <path
+                d="M2 9.5h10.5l2.5 3H30v12H2v-15Z"
+                fill="#111827"
+            />
+            <path
+                d="M2 8h10.5l2.5 3H30v3H2V8Z"
+                fill="#111827"
+            />
+            <path
+                d="M16 2h5v11h4l-6.5 7L12 13h4V2Z"
+                fill="#ffffff"
+                stroke="#111827"
+                strokeWidth="2"
+                strokeLinejoin="round"
+            />
+        </svg>
+    )
+}
+
 export function EntityEditor() {
     const {
         activeSectionId,
@@ -80,6 +108,7 @@ export function EntityEditor() {
     const [phoneImageModalOpen, setPhoneImageModalOpen] = useState(false)
     const [isAddingDivider, setIsAddingDivider] = useState(false)
     const [importTitlesDialogOpen, setImportTitlesDialogOpen] = useState(false)
+    const [lastUsedQuickTitle, setLastUsedQuickTitle] = useState<string | null>(null)
     const [quickTitleDialog, setQuickTitleDialog] = useState({
         open: false,
         initialValue: '',
@@ -109,6 +138,10 @@ export function EntityEditor() {
         if (!selected) return null
         return selectedItems.find((x: any) => x.id === selected.id) ?? null
     }, [selectedItems, selected?.id])
+
+    useEffect(() => {
+        setLastUsedQuickTitle(null)
+    }, [activeEntityType, activeSectionId, selected?.id, selected?.entityType, selected?.sectionId])
 
     useEffect(() => {
         let isMounted = true
@@ -158,6 +191,7 @@ export function EntityEditor() {
     useEffect(() => {
         if (!selected || !selectedItem) {
             setForm({})
+            setLastUsedQuickTitle(null)
             return
         }
 
@@ -206,6 +240,7 @@ export function EntityEditor() {
             e.preventDefault()
             clearSelection()
             setForm({})
+            setLastUsedQuickTitle(null)
             // keep same activeViewType, but return to create mode
             requestAnimationFrame(() => focusPrimaryInput())
         }
@@ -215,6 +250,10 @@ export function EntityEditor() {
     }, [selected, clearSelection, focusPrimaryInput])
 
     const updateField = (key: keyof FormState, value: string) => {
+        if (key === 'title' && !value.trim()) {
+            setLastUsedQuickTitle(null)
+        }
+
         setForm((prev) => ({ ...prev, [key]: value }))
     }
 
@@ -308,6 +347,7 @@ export function EntityEditor() {
             }
 
             setForm({})
+            setLastUsedQuickTitle(null)
             requestAnimationFrame(() => focusPrimaryInput())
 
             if (shouldPromptQuickTitle) {
@@ -334,18 +374,22 @@ export function EntityEditor() {
         }
 
         setForm({})
+        setLastUsedQuickTitle(null)
         requestAnimationFrame(() => focusPrimaryInput())
     }
 
     // ✅ QuickTitle: insert at beginning; if already has "XXX: " prefix, replace it
     const applyQuickTitle = (prefix: string) => {
-        setForm((prev) => {
-            const current = prev.title ?? ''
-            const cleaned = current.replace(/^[^:]+:\s*/, '').trimStart()
-            const normalizedPrefix = prefix.trim().replace(/:\s*$/, '').toUpperCase()
-            const nextTitle = `${normalizedPrefix}: ${cleaned}`
-            return { ...prev, title: nextTitle }
+        const result = applyQuickTitleToEditor({
+            editorValue: form.title ?? '',
+            selectedQuickTitle: prefix,
+            lastUsedQuickTitle,
         })
+
+        setForm((prev) => {
+            return { ...prev, title: result.editorValue }
+        })
+        setLastUsedQuickTitle(result.lastUsedQuickTitle)
 
         requestAnimationFrame(() => focusTitleInput())
     }
@@ -476,10 +520,12 @@ export function EntityEditor() {
                     {canImportTitlesFromBackup && (
                         <button
                             type="button"
+                            aria-label="Importă din arhivă"
+                            title="Importă din arhivă"
                             onClick={() => setImportTitlesDialogOpen(true)}
-                            className="ml-6 shrink-0 rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                            className="ml-6 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
                         >
-                            Importă din backup
+                            <ArchiveImportIcon />
                         </button>
                     )}
 
@@ -503,7 +549,11 @@ export function EntityEditor() {
             {editorEntityType === 'titles' && (
                 <div className="border-t pt-3 mt-2 shrink-0">
                     <div className="text-xs text-gray-500 mb-2">Prefixe rapide</div>
-                    <QuickTitlesBar onApplyPrefix={applyQuickTitle} focusEditor={focusTitleInput} />
+                    <QuickTitlesBar
+                        onApplyPrefix={applyQuickTitle}
+                        focusEditor={focusTitleInput}
+                        activeQuickTitle={lastUsedQuickTitle}
+                    />
                 </div>
             )}
 
