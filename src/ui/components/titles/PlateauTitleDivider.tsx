@@ -20,7 +20,11 @@ export function PlateauTitleDivider({
             className="group flex min-h-3 items-center gap-3 rounded bg-green-100 px-3 py-0.5"
             data-testid="plateau-title-divider"
         >
-            {dragHandle}
+            {dragHandle && (
+                <div className="ml-[5px] shrink-0">
+                    {dragHandle}
+                </div>
+            )}
 
             <div
                 role="separator"
