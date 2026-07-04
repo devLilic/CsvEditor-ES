@@ -1,5 +1,5 @@
 // src/ui/components/EntityList.tsx
-import { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react'
+import { Fragment, type ButtonHTMLAttributes, type DOMAttributes, type ReactNode, useEffect, useMemo, useState } from 'react'
 import {
     DndContext,
     KeyboardSensor,
@@ -38,14 +38,17 @@ function getPlateauItemId(item: any): string {
 }
 
 function getPlateauTitleListItems(items: any[]): PlateauTitleListItem[] {
-    return items.flatMap((item) => {
+    return items.flatMap<PlateauTitleListItem>((item) => {
         if (item.type === 'divider') return [{ type: 'divider', id: item.id } satisfies PlateauTitleListItem]
         if (item.entityType === 'titles' && item.rowId) return [{ type: 'title', rowId: item.rowId } satisfies PlateauTitleListItem]
         return []
     })
 }
 
-function DragHandle({ attributes, listeners }: { attributes?: Record<string, unknown>; listeners?: Record<string, unknown> }) {
+function DragHandle({ attributes, listeners }: {
+    attributes?: ButtonHTMLAttributes<HTMLButtonElement>
+    listeners?: DOMAttributes<HTMLButtonElement>
+}) {
     return (
         <button
             type="button"

@@ -10,11 +10,13 @@ export type PlateauTitleListItem =
         id: string
     }
 
+export type PlateauTitleDividerItem = Extract<PlateauTitleListItem, { type: 'divider' }>
+
 export function isTitleDividerMarker(value: string): boolean {
     return value === TITLE_DIVIDER_MARKER
 }
 
-export function createTitleDivider(id: string): PlateauTitleListItem {
+export function createTitleDivider(id: string): PlateauTitleDividerItem {
     return {
         type: 'divider',
         id,

@@ -32,7 +32,7 @@ export function mapPlateauItemsToTitleBackupItems(
         return []
     }
 
-    return plateau.rows.flatMap((row) => {
+    return plateau.rows.flatMap<TitleBackupListItem>((row) => {
         if (row.title) {
             return [{
                 type: 'title',

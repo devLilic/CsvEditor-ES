@@ -70,7 +70,7 @@ function rowsToBlockItems(section: CsvSection, entityType: EntityType): BlockIte
 }
 
 function rowsToPlateauTitleListItems(rows: SectionRow[]): PlateauTitleListItem[] {
-    return rows.flatMap((row) => {
+    return rows.flatMap<PlateauTitleListItem>((row) => {
         if (row.title) return [{ type: 'title', rowId: row.id } satisfies PlateauTitleListItem]
         if (row.titleDivider) return [row.titleDivider]
         return []
