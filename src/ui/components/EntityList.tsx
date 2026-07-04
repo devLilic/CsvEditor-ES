@@ -29,6 +29,7 @@ import { EmptyState } from './common/EmptyState'
 import { PlateauTitleDivider } from './titles/PlateauTitleDivider'
 import { useEditMode } from '@/ui/context/EditModeContext'
 import { useTitleFilter } from '@/ui/context/TitleFilterContext'
+import { showErrorToast } from './common/toast'
 
 const CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR = 'Nu pot exista două separatoare consecutive.'
 
@@ -100,9 +101,7 @@ export function EntityList() {
     const { select, isSelected } = useSelectedEntity()
     const { editMode } = useEditMode()
     const { titleFilter } = useTitleFilter()
-    const [dividerDeleteError, setDividerDeleteError] = useState('')
     const [deletingDividerId, setDeletingDividerId] = useState<string | null>(null)
-    const [reorderError, setReorderError] = useState('')
     const [enablePlateauTitleDragDrop, setEnablePlateauTitleDragDrop] = useState<boolean | null>(null)
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -179,14 +178,13 @@ export function EntityList() {
     })
 
     const handleDeleteDivider = async (dividerId: string) => {
-        setDividerDeleteError('')
         setDeletingDividerId(dividerId)
 
         const result = await deletePlateauTitleDivider(dividerId)
 
         setDeletingDividerId(null)
         if (!result.ok) {
-            setDividerDeleteError(result.error ?? 'TITLE_DIVIDER_DELETE_FAILED')
+            showErrorToast(result.error ?? 'TITLE_DIVIDER_DELETE_FAILED')
         }
     }
 
@@ -195,7 +193,6 @@ export function EntityList() {
         const overId = event.over?.id ? String(event.over.id) : ''
         if (!activeId || !overId || activeId === overId) return
 
-        setReorderError('')
         const previewResult = previewPlateauTitleReorder(
             getPlateauTitleListItems(items),
             activeId,
@@ -204,14 +201,14 @@ export function EntityList() {
 
         if (!previewResult.ok) {
             if (previewResult.reason === 'consecutive-dividers') {
-                setReorderError(CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR)
+                showErrorToast(CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR)
             }
             return
         }
 
         const result = await reorderPlateauTitleItems(activeId, overId)
         if (!result.ok) {
-            setReorderError(result.error ?? 'TITLE_REORDER_FAILED')
+            showErrorToast(result.error ?? 'TITLE_REORDER_FAILED')
         }
     }
 
@@ -327,16 +324,6 @@ export function EntityList() {
 
     return (
         <div className="h-full min-h-0 overflow-y-auto">
-            {dividerDeleteError && (
-                <div role="alert" className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                    {dividerDeleteError}
-                </div>
-            )}
-            {reorderError && (
-                <div role="alert" className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                    {reorderError}
-                </div>
-            )}
             {canDragPlateauTitles ? (
                 <DndContext
                     sensors={sensors}

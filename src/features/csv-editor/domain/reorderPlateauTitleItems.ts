@@ -21,6 +21,28 @@ function hasConsecutiveDividers(items: PlateauTitleListItem[]): boolean {
     return items.some((item, index) => item.type === 'divider' && items[index + 1]?.type === 'divider')
 }
 
+function collapseConsecutiveDividers(items: PlateauTitleListItem[]): PlateauTitleListItem[] {
+    const nextItems: PlateauTitleListItem[] = []
+    let previousWasDivider = false
+
+    for (const item of items) {
+        if (item.type === 'divider') {
+            if (previousWasDivider) {
+                continue
+            }
+
+            nextItems.push(item)
+            previousWasDivider = true
+            continue
+        }
+
+        nextItems.push(item)
+        previousWasDivider = false
+    }
+
+    return nextItems
+}
+
 export function reorderPlateauTitleItems(
     items: PlateauTitleListItem[],
     activeId: string,
@@ -45,7 +67,11 @@ export function reorderPlateauTitleItems(
     nextItems.splice(overIndex, 0, activeItem)
 
     if (hasConsecutiveDividers(nextItems)) {
-        return { ok: false, reason: 'consecutive-dividers' }
+        if (activeItem.type === 'divider') {
+            return { ok: false, reason: 'consecutive-dividers' }
+        }
+
+        return { ok: true, items: collapseConsecutiveDividers(nextItems) }
     }
 
     return { ok: true, items: nextItems }
