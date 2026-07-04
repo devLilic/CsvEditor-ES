@@ -144,9 +144,9 @@ export function ImportTitlesFromBackupDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="title-backup-import-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            className="app-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         >
-            <div className="flex max-h-[85vh] w-full max-w-4xl flex-col rounded bg-white p-5 shadow-lg">
+            <div className="app-modal flex max-h-[85vh] w-full max-w-4xl flex-col rounded bg-white p-5 shadow-lg">
                 <div className="flex items-center justify-between gap-4">
                     <h2 id="title-backup-import-title" className="text-lg font-semibold text-gray-900">
                         Import titluri din backup
@@ -155,20 +155,20 @@ export function ImportTitlesFromBackupDialog({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                        className="app-button rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
                     >
                         Cancel
                     </button>
                 </div>
 
                 {status && (
-                    <div role="alert" className="mt-4 whitespace-pre-line rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    <div role="alert" className="app-notification app-notification-danger mt-4 whitespace-pre-line rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
                         {status}
                     </div>
                 )}
 
                 <div className="mt-5 grid min-h-0 flex-1 grid-cols-[minmax(180px,260px)_1fr] gap-4">
-                    <div className="min-h-0 overflow-y-auto rounded border border-gray-200">
+                    <div className="app-panel min-h-0 overflow-y-auto rounded border border-gray-200">
                         {files.length === 0 ? (
                             <p className="px-3 py-2 text-sm text-gray-600">Nu exista backupuri de titluri.</p>
                         ) : (
@@ -180,7 +180,7 @@ export function ImportTitlesFromBackupDialog({
                                             onClick={() => setSelectedFile(filename)}
                                             className={`w-full px-3 py-2 text-left text-sm ${
                                                 filename === selectedFile
-                                                    ? 'bg-blue-50 font-semibold text-blue-800'
+                                                    ? 'app-list-row-active bg-blue-50 font-semibold text-blue-800'
                                                     : 'text-gray-800 hover:bg-gray-50'
                                             }`}
                                         >
@@ -192,7 +192,7 @@ export function ImportTitlesFromBackupDialog({
                         )}
                     </div>
 
-                    <div className="min-h-0 overflow-y-auto rounded border border-gray-200 p-3">
+                    <div className="app-panel min-h-0 overflow-y-auto rounded border border-gray-200 p-3">
                         {!backupResult ? (
                             <p className="text-sm text-gray-600">Selecteaza un backup.</p>
                         ) : (
@@ -203,12 +203,12 @@ export function ImportTitlesFromBackupDialog({
                                             <div
                                                 key={`${backupResult.filename}:divider:${index}`}
                                                 data-testid="backup-title-divider"
-                                                className="flex min-h-4 items-center rounded bg-green-50 px-3"
+                                                className="app-divider-row flex min-h-4 items-center rounded bg-green-50 px-3"
                                             >
                                                 <div
                                                     role="separator"
                                                     aria-orientation="horizontal"
-                                                    className="h-px flex-1 bg-green-500"
+                                                    className="app-divider-line h-px flex-1 bg-green-500"
                                                 />
                                             </div>
                                         )
@@ -219,7 +219,7 @@ export function ImportTitlesFromBackupDialog({
                                     return (
                                         <label
                                             key={key}
-                                            className="flex cursor-pointer items-center gap-3 rounded border border-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+                                            className="app-list-row flex cursor-pointer items-center gap-3 rounded border border-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
                                         >
                                             <input
                                                 type="checkbox"
@@ -239,7 +239,7 @@ export function ImportTitlesFromBackupDialog({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                        className="app-button rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                     >
                         Cancel
                     </button>
@@ -247,7 +247,7 @@ export function ImportTitlesFromBackupDialog({
                         type="button"
                         onClick={handleImport}
                         disabled={selectedItems.length === 0}
-                        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="app-button app-button-primary rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         Import
                     </button>

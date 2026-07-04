@@ -109,9 +109,9 @@ export function SavedProjectsModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="saved-projects-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            className="app-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         >
-            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded bg-white p-5 shadow-lg">
+            <div className="app-modal flex max-h-[85vh] w-full max-w-2xl flex-col rounded bg-white p-5 shadow-lg">
                 <div className="flex items-center justify-between gap-4">
                     <h2 id="saved-projects-title" className="text-lg font-semibold text-gray-900">
                         Proiecte salvate
@@ -120,7 +120,7 @@ export function SavedProjectsModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                        className="app-button rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
                     >
                         Închide
                     </button>
@@ -132,7 +132,7 @@ export function SavedProjectsModal({
                         <input
                             value={projectName}
                             onChange={(event) => setProjectName(event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -140,14 +140,14 @@ export function SavedProjectsModal({
                         type="button"
                         onClick={handleSave}
                         disabled={isBusy}
-                        className="w-fit rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="app-button app-button-primary w-fit rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         Salvează
                     </button>
                 </div>
 
                 {status && (
-                    <div role="alert" className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    <div role="alert" className="app-notification app-notification-danger mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
                         {status}
                     </div>
                 )}
@@ -176,7 +176,7 @@ export function SavedProjectsModal({
                                             <button
                                                 type="button"
                                                 disabled={isBusy}
-                                                className="rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                                className="app-button rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                                             >
                                                 Încarcă în CSV-ul de lucru
                                             </button>
@@ -186,7 +186,7 @@ export function SavedProjectsModal({
                                             type="button"
                                             onClick={() => handleDelete(file.filename)}
                                             disabled={isBusy}
-                                            className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="app-button app-button-danger rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             Șterge
                                         </button>

@@ -43,7 +43,7 @@ export function InputField({
                 onKeyDown={handleKeyDown}
                 className={`
                 ${uppercase ? 'uppercase' : ''}
-          border px-3 py-2 rounded text-2xl focus:outline-none focus:ring-2
+          app-input border px-3 py-2 rounded text-2xl focus:outline-none focus:ring-2
           ${invalid
                     ? 'border-red-500 focus:ring-red-400 animate-shake'
                     : 'border-gray-300 focus:ring-blue-500'}

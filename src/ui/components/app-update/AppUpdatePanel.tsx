@@ -29,7 +29,7 @@ export function AppUpdatePanel() {
     const canInstall = status.type === 'downloaded'
 
     return (
-        <section className="flex flex-col gap-4 rounded bg-white p-5 shadow-sm">
+        <section className="app-panel flex flex-col gap-4 rounded bg-white p-5 shadow-sm">
             <div>
                 <h2 className="text-lg font-semibold text-gray-900">
                     Actualizari Punctul pe Azi
@@ -44,7 +44,7 @@ export function AppUpdatePanel() {
                     type="button"
                     onClick={checkForUpdates}
                     disabled={isBusy}
-                    className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="app-button app-button-primary rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     Verifica actualizari
                 </button>
@@ -54,7 +54,7 @@ export function AppUpdatePanel() {
                         type="button"
                         onClick={downloadUpdate}
                         disabled={isBusy}
-                        className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="app-button rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         Descarca update
                     </button>
@@ -64,7 +64,7 @@ export function AppUpdatePanel() {
                     <button
                         type="button"
                         onClick={installUpdate}
-                        className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                        className="app-button app-button-success rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                     >
                         Instaleaza si reporneste
                     </button>

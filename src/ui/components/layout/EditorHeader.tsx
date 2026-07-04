@@ -150,7 +150,7 @@ export function EditorHeader() {
     }
 
     return (
-        <div className="relative flex items-center justify-between gap-4 border-b bg-white px-4 py-2">
+        <div className="app-header relative flex items-center justify-between gap-4 border-b bg-white px-4 py-2">
             <SectionsTabs />
 
             <div className="relative flex items-center">
@@ -159,11 +159,11 @@ export function EditorHeader() {
                     value={titleFilter}
                     onChange={(e) => setTitleFilter(e.target.value)}
                     placeholder="Cauta titlul"
-                    className="w-64 rounded border border-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="app-input w-64 rounded border border-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                     onClick={() => setTitleFilter('')}
-                    className="absolute right-1 bg-transparent px-2 py-2 text-sm text-gray-500 hover:bg-gray-100"
+                    className="app-icon-button absolute right-1 bg-transparent px-2 py-2 text-sm text-gray-500 hover:bg-gray-100"
                     aria-label="Curata filtrul"
                 >
                     <TrashIcon />
@@ -175,7 +175,7 @@ export function EditorHeader() {
                     <button
                         type="button"
                         onClick={handleToggleTedMode}
-                        className={`rounded border px-3 py-1 text-sm font-medium ${
+                        className={`app-button rounded border px-3 py-1 text-sm font-medium ${
                             isTedMode
                                 ? 'border-blue-700 bg-blue-700 text-white hover:bg-blue-800'
                                 : 'border-blue-600 bg-white text-blue-700 hover:bg-blue-50'
@@ -185,7 +185,7 @@ export function EditorHeader() {
                     </button>
                 )}
 
-                <span className="max-w-48 truncate rounded border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+                <span className="app-chip max-w-48 truncate rounded border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
                     CSV: {workingCsvInfo.filename}
                 </span>
 
@@ -194,7 +194,7 @@ export function EditorHeader() {
                 <button
                     type="button"
                     onClick={() => setIsSavedProjectsModalOpen(true)}
-                    className="rounded border border-gray-300 bg-white px-4 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    className="app-button rounded border border-gray-300 bg-white px-4 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
                 >
                     Proiecte salvate
                 </button>
@@ -204,7 +204,7 @@ export function EditorHeader() {
                     description="Se va crea un backup CSV in folderul setat in Setari. Doar dupa backup, fisierul de lucru va fi resetat cu continutul standard. Daca backup-ul esueaza, resetarea nu se face."
                     onConfirm={handleStartNewProject}
                 >
-                    <button className="inline-flex items-center gap-2 rounded bg-red-600 px-4 py-1 text-white">
+                    <button className="app-button app-button-danger inline-flex items-center gap-2 rounded bg-red-600 px-4 py-1 text-white">
                         <TrashIcon />
                         Proiect nou
                     </button>
@@ -214,7 +214,7 @@ export function EditorHeader() {
             {newProjectError && (
                 <div
                     role="alert"
-                    className="absolute right-4 top-14 max-w-md rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 shadow-sm"
+                    className="app-notification app-notification-danger absolute right-4 top-14 max-w-md rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 shadow-sm"
                 >
                     {newProjectError}
                 </div>
@@ -223,7 +223,7 @@ export function EditorHeader() {
             {templateSaveWarning && (
                 <div
                     role="status"
-                    className="absolute right-4 top-14 max-w-md rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 shadow-sm"
+                    className="app-notification app-notification-warning absolute right-4 top-14 max-w-md rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 shadow-sm"
                 >
                     {templateSaveWarning}
                 </div>

@@ -25,8 +25,8 @@ export function ConfirmDialog({
             </span>
 
             {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="w-80 rounded bg-white p-4">
+                <div className="app-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="app-modal w-80 rounded bg-white p-4">
                         <h2 className="mb-2 font-semibold">{title}</h2>
                         {description && (
                             <p className="mb-4 text-sm text-gray-600">
@@ -34,7 +34,7 @@ export function ConfirmDialog({
                             </p>
                         )}
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setOpen(false)}>
+                            <button className="app-button rounded border px-3 py-1" onClick={() => setOpen(false)}>
                                 {cancelLabel}
                             </button>
                             <button
@@ -42,7 +42,7 @@ export function ConfirmDialog({
                                     onConfirm()
                                     setOpen(false)
                                 }}
-                                className="rounded bg-red-600 px-3 py-1 text-white"
+                                className="app-button app-button-danger rounded bg-red-600 px-3 py-1 text-white"
                             >
                                 {confirmLabel}
                             </button>

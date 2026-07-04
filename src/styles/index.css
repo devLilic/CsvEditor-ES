@@ -3,9 +3,371 @@
 @tailwind utilities;
 
 :root {
+    --app-bg: #f1f5f9;
+    --panel-bg: #ffffff;
+    --panel-bg-elevated: #ffffff;
+    --border-color: #d1d5db;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --success: #15803d;
+    --input-bg: #ffffff;
+    --button-bg: #ffffff;
+    --tab-active-bg: #2563eb;
+    --shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --radius: 0.25rem;
+    --divider-color: #d1d5db;
+    --divider-hover: #3b82f6;
+    --drag-handle: #6b7280;
     --duplicate-title-bg: #fff4b8;
     --duplicate-title-border: #b88a00;
     --duplicate-title-text: #332800;
+    --modal-overlay: rgb(0 0 0 / 0.4);
+}
+
+:root[data-theme='legacy'] {
+    --app-bg: #f1f5f9;
+    --panel-bg: #ffffff;
+    --panel-bg-elevated: #ffffff;
+    --border-color: #d1d5db;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --success: #15803d;
+    --input-bg: #ffffff;
+    --button-bg: #ffffff;
+    --tab-active-bg: #2563eb;
+    --shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --radius: 0.25rem;
+    --divider-color: #d1d5db;
+    --divider-hover: #3b82f6;
+    --drag-handle: #6b7280;
+    --duplicate-title-bg: #fff4b8;
+    --duplicate-title-border: #b88a00;
+    --duplicate-title-text: #332800;
+    --modal-overlay: rgb(0 0 0 / 0.4);
+}
+
+:root[data-theme='metallic'] {
+    --app-bg: #d9dde2;
+    --panel-bg: #eef0f2;
+    --panel-bg-elevated: #f7f8f9;
+    --border-color: #9aa3ad;
+    --text-primary: #171a1f;
+    --text-secondary: #4d5661;
+    --accent: #3f6f9f;
+    --accent-hover: #325b84;
+    --danger: #b4232f;
+    --warning: #a15c05;
+    --success: #2f7d4d;
+    --input-bg: #f8fafb;
+    --button-bg: #e7eaed;
+    --tab-active-bg: #48515b;
+    --shadow: 0 10px 28px rgb(35 42 50 / 0.18);
+    --radius: 0.375rem;
+    --divider-color: #8f98a3;
+    --divider-hover: #48515b;
+    --drag-handle: #515b66;
+    --duplicate-title-bg: #f3d985;
+    --duplicate-title-border: #9a7416;
+    --duplicate-title-text: #2d250c;
+    --modal-overlay: rgb(24 28 33 / 0.52);
+}
+
+html {
+    background: var(--app-bg);
+    color: var(--text-primary);
+}
+
+:root[data-theme='metallic'] body {
+    background:
+        linear-gradient(90deg, rgb(255 255 255 / 0.16) 0, rgb(255 255 255 / 0) 18%),
+        var(--app-bg);
+    color: var(--text-primary);
+}
+
+:root[data-theme='metallic'] .app-shell,
+:root[data-theme='metallic'] .app-settings {
+    background:
+        linear-gradient(180deg, #e5e8eb 0%, #d2d7dc 100%);
+    color: var(--text-primary);
+}
+
+:root[data-theme='metallic'] .app-header {
+    background: #e9ecef;
+    border-color: #9fa8b2;
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.65), 0 1px 8px rgb(49 57 66 / 0.14);
+}
+
+:root[data-theme='metallic'] .app-body {
+    background: transparent;
+}
+
+:root[data-theme='metallic'] .app-panel,
+:root[data-theme='metallic'] .app-editor,
+:root[data-theme='metallic'] .app-list-panel,
+:root[data-theme='metallic'] .app-modal {
+    background: var(--panel-bg);
+    border-color: var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    box-shadow: var(--shadow), inset 0 1px 0 rgb(255 255 255 / 0.72);
+}
+
+:root[data-theme='metallic'] .app-editor,
+:root[data-theme='metallic'] .app-modal,
+:root[data-theme='metallic'] .app-panel:nth-of-type(even) {
+    background: var(--panel-bg-elevated);
+}
+
+:root[data-theme='metallic'] .app-panel-divider,
+:root[data-theme='metallic'] .border-t,
+:root[data-theme='metallic'] .border-b {
+    border-color: var(--border-color);
+}
+
+:root[data-theme='metallic'] .app-preview-container {
+    background: #c2c8cf;
+    border: 1px solid #8f98a3;
+    border-radius: var(--radius);
+    padding: 10px;
+    box-shadow: inset 0 1px 6px rgb(28 34 40 / 0.2);
+}
+
+:root[data-theme='metallic'] .app-input,
+:root[data-theme='metallic'] input,
+:root[data-theme='metallic'] select,
+:root[data-theme='metallic'] textarea {
+    background: var(--input-bg);
+    border-color: #8e98a3;
+    color: var(--text-primary);
+    box-shadow: inset 0 1px 2px rgb(34 41 48 / 0.12);
+}
+
+:root[data-theme='metallic'] .app-input:focus,
+:root[data-theme='metallic'] input:focus,
+:root[data-theme='metallic'] select:focus,
+:root[data-theme='metallic'] textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgb(63 111 159 / 0.22), inset 0 1px 2px rgb(34 41 48 / 0.12);
+}
+
+:root[data-theme='metallic'] .app-button,
+:root[data-theme='metallic'] button.app-button {
+    background: var(--button-bg);
+    border-color: #8f99a4;
+    color: var(--text-primary);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.72), 0 1px 1px rgb(31 38 45 / 0.1);
+}
+
+:root[data-theme='metallic'] .app-button:hover,
+:root[data-theme='metallic'] .app-icon-button:hover {
+    background: #d9dde1;
+    border-color: #6f7b86;
+}
+
+:root[data-theme='metallic'] .app-button:disabled {
+    background: #b7bec6;
+    color: #6a737d;
+    box-shadow: none;
+}
+
+:root[data-theme='metallic'] .app-button-primary,
+:root[data-theme='metallic'] .app-tab.bg-blue-600,
+:root[data-theme='metallic'] .app-tab.bg-blue-600:hover,
+:root[data-theme='metallic'] .app-list-row.bg-blue-100 {
+    background: var(--tab-active-bg);
+    border-color: #303840;
+    color: #ffffff;
+}
+
+:root[data-theme='metallic'] .app-button-primary:hover {
+    background: #343c45;
+}
+
+:root[data-theme='metallic'] .app-button-secondary {
+    background: #e3e7ea;
+    border-color: #7e8a95;
+    color: #26323d;
+}
+
+:root[data-theme='metallic'] .app-button-success {
+    background: var(--success);
+    border-color: #286943;
+    color: #ffffff;
+}
+
+:root[data-theme='metallic'] .app-button-success:hover {
+    background: #286b42;
+}
+
+:root[data-theme='metallic'] .app-button-danger {
+    background: var(--danger);
+    border-color: #851923;
+    color: #ffffff;
+}
+
+:root[data-theme='metallic'] .app-button-danger:hover {
+    background: #941d27;
+}
+
+:root[data-theme='metallic'] .app-tab {
+    background: #dde2e6;
+    border-color: #9aa4ae;
+    color: #25303a;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
+}
+
+:root[data-theme='metallic'] .app-tab:hover {
+    background: #cfd5db;
+}
+
+:root[data-theme='metallic'] .app-section-tabs,
+:root[data-theme='metallic'] .app-entity-tabs,
+:root[data-theme='metallic'] .app-quick-titles {
+    color: var(--text-primary);
+}
+
+:root[data-theme='metallic'] .app-quick-titles {
+    background: #d6dbe0;
+    border: 1px solid #a4adb6;
+    border-radius: var(--radius);
+}
+
+:root[data-theme='metallic'] .app-quick-title {
+    border-color: #56626d;
+}
+
+:root[data-theme='metallic'] .app-list-panel {
+    overflow: hidden;
+}
+
+:root[data-theme='metallic'] .app-list-row {
+    border-bottom-color: #c0c7ce;
+}
+
+:root[data-theme='metallic'] .app-list-row:hover {
+    background: #dce1e5;
+}
+
+:root[data-theme='metallic'] .app-list-row.bg-blue-100:hover {
+    background: #3f4852;
+}
+
+:root[data-theme='metallic'] .app-list-row.bg-\[var\(--duplicate-title-bg\)\],
+:root[data-theme='metallic'] .app-list-row.bg-\[var\(--duplicate-title-bg\)\]:hover {
+    background: var(--duplicate-title-bg);
+    border-left-color: var(--duplicate-title-border);
+    color: var(--duplicate-title-text);
+}
+
+:root[data-theme='metallic'] .app-list-row-active {
+    background: #d2d8de;
+    color: #1f2a34;
+}
+
+:root[data-theme='metallic'] .app-drag-handle {
+    background: #dfe4e8;
+    border-color: #78838e;
+    color: var(--drag-handle);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.72);
+}
+
+:root[data-theme='metallic'] .app-drag-handle:hover {
+    background: #c9d0d7;
+    color: #222a32;
+}
+
+:root[data-theme='metallic'] .app-resizer > div {
+    background: var(--divider-color);
+}
+
+:root[data-theme='metallic'] .app-resizer:hover > div {
+    background: var(--divider-hover);
+}
+
+:root[data-theme='metallic'] .app-divider-row {
+    background: transparent;
+    min-height: 14px;
+}
+
+:root[data-theme='metallic'] .app-divider-line {
+    background: var(--divider-color);
+    opacity: 0.95;
+}
+
+:root[data-theme='metallic'] .app-divider-row:hover .app-divider-line {
+    background: var(--divider-hover);
+}
+
+:root[data-theme='metallic'] .app-divider-button {
+    background: #e2e6ea;
+    border-color: #8c96a1;
+}
+
+:root[data-theme='metallic'] .app-divider-button span span {
+    border-color: #404952;
+    background-color: #404952;
+}
+
+:root[data-theme='metallic'] .app-chip {
+    background: #d8dde2;
+    border-color: #a0a9b2;
+    color: var(--text-secondary);
+}
+
+:root[data-theme='metallic'] .app-modal-overlay {
+    background: var(--modal-overlay);
+}
+
+:root[data-theme='metallic'] .app-notification {
+    box-shadow: var(--shadow);
+}
+
+:root[data-theme='metallic'] .app-notification-danger {
+    background: #f5e3e5;
+    border-color: #c56b73;
+    color: #721b23;
+}
+
+:root[data-theme='metallic'] .app-notification-warning {
+    background: #f5ead7;
+    border-color: #c9984b;
+    color: #6d430d;
+}
+
+:root[data-theme='metallic'] .app-notification-success {
+    background: #dfefe6;
+    border-color: #76a98a;
+    color: #1f5e38;
+}
+
+:root[data-theme='metallic'] .app-shell .text-gray-900,
+:root[data-theme='metallic'] .app-settings .text-gray-900,
+:root[data-theme='metallic'] .app-modal .text-gray-900,
+:root[data-theme='metallic'] .app-shell .text-gray-800,
+:root[data-theme='metallic'] .app-settings .text-gray-800,
+:root[data-theme='metallic'] .app-modal .text-gray-800 {
+    color: var(--text-primary);
+}
+
+:root[data-theme='metallic'] .app-shell .text-gray-700,
+:root[data-theme='metallic'] .app-settings .text-gray-700,
+:root[data-theme='metallic'] .app-modal .text-gray-700,
+:root[data-theme='metallic'] .app-shell .text-gray-600,
+:root[data-theme='metallic'] .app-settings .text-gray-600,
+:root[data-theme='metallic'] .app-modal .text-gray-600,
+:root[data-theme='metallic'] .app-shell .text-gray-500,
+:root[data-theme='metallic'] .app-settings .text-gray-500,
+:root[data-theme='metallic'] .app-modal .text-gray-500 {
+    color: var(--text-secondary);
 }
 
 

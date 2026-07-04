@@ -40,7 +40,7 @@ export function QuickTitlesBar({
     }
 
     return (
-        <div className="flex justify-between items-start items-center gap-2 flex-wrap bg-gray-50 p-2 rounded">
+        <div className="app-quick-titles flex justify-between items-start items-center gap-2 flex-wrap bg-gray-50 p-2 rounded">
             <div className="flex gap-2">
                 {/* QuickTitle buttons */}
                 {quickTitles.map((qt) => {
@@ -48,7 +48,7 @@ export function QuickTitlesBar({
 
                     return (
                     <div
-                        className={`flex rounded-lg border overflow-hidden ${
+                        className={`app-quick-title flex rounded-lg border overflow-hidden ${
                             isActive ? 'border-emerald-700 ring-2 ring-emerald-300' : 'border-blue-700'
                         }`}
                         key={qt}
@@ -59,7 +59,7 @@ export function QuickTitlesBar({
                                 onApplyPrefix(qt)
                                 focusEditor()
                             }}
-                            className={`px-3 py-2 rounded text-sm text-white ${
+                            className={`app-button app-button-primary px-3 py-2 rounded text-sm text-white ${
                                 isActive ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                         >
@@ -68,7 +68,7 @@ export function QuickTitlesBar({
                         {editMode && (
                             <button
                                 onClick={() => removeQuickTitle(qt)}
-                                className="px-2 text-sm hover:text-white hover:bg-red-700"
+                                className="app-icon-button px-2 text-sm hover:text-white hover:bg-red-700"
                             >
                                 ✕
                             </button>
@@ -83,7 +83,7 @@ export function QuickTitlesBar({
             <input
                 ref={inputRef}
                 placeholder="Adaugă prefix nou..."
-                className="border border-gray-500 px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="app-input border border-gray-500 px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault()
