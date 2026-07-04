@@ -80,7 +80,7 @@ export function SectionsTabs() {
     }, [renameSectionId, sections])
 
     return (
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="app-section-tabs flex items-center gap-2 flex-wrap">
             {sections.map((section) => {
                 const isActive = section.id === activeSectionId
 
@@ -90,7 +90,7 @@ export function SectionsTabs() {
                     return (
                         <div
                             key={section.id}
-                            className={`flex items-center gap-1 rounded border px-2 py-1 ${
+                            className={`app-tab flex items-center gap-1 rounded border px-2 py-1 ${
                                 isActive ? 'bg-blue-600 text-white border-blue-700' : 'bg-white hover:bg-gray-50'
                             }`}
                         >
@@ -107,7 +107,7 @@ export function SectionsTabs() {
                                     e.stopPropagation()
                                     openRename(section.id)
                                 }}
-                                className={`ml-1 inline-flex items-center justify-center rounded border px-2 py-1 ${
+                                className={`app-icon-button ml-1 inline-flex items-center justify-center rounded border px-2 py-1 ${
                                     isActive ? 'border-white/50 hover:bg-white/10' : 'border-gray-200 hover:bg-gray-100'
                                 }`}
                                 title="Rename"
@@ -122,7 +122,7 @@ export function SectionsTabs() {
                                 onConfirm={() => handleDeleteBeta(section.id)}
                             >
                                 <button
-                                    className={`inline-flex items-center justify-center rounded border px-2 py-1 ${
+                                    className={`app-icon-button inline-flex items-center justify-center rounded border px-2 py-1 ${
                                         isActive ? 'border-white/50 hover:bg-white/10' : 'border-gray-200 hover:bg-gray-100'
                                     }`}
                                     title="Delete"
@@ -139,7 +139,7 @@ export function SectionsTabs() {
                     <button
                         key={section.id}
                         onClick={() => handleSwitchSection(section.id)}
-                        className={`px-3 py-1 rounded text-sm border ${
+                        className={`app-tab px-3 py-1 rounded text-sm border ${
                             isActive ? 'bg-blue-600 text-white border-blue-700' : 'bg-white hover:bg-gray-50 border-gray-200'
                         }`}
                     >
@@ -158,7 +158,7 @@ export function SectionsTabs() {
 
             <button
                 onClick={() => setAddOpen(true)}
-                className="px-3 py-1 rounded text-sm border bg-white border-green-300 hover:bg-green-500 hover:text-white"
+                className="app-button app-button-secondary px-3 py-1 rounded text-sm border bg-white border-green-300 hover:bg-green-500 hover:text-white"
                 title="Add BETA"
             >
                 ADAUGĂ BETA

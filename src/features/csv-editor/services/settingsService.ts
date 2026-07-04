@@ -4,6 +4,12 @@ import {
     createConfigWithPlateauTitleDragDropSetting,
     getPlateauTitleDragDropSetting,
 } from '@/features/settings/plateauTitleDragDropSetting'
+import {
+    getUiThemeSetting,
+    persistUiThemeSetting,
+    restoreUiThemeSetting,
+} from '@/features/theme/themeSetting'
+import type { UiTheme } from '@/features/theme/themeResolver'
 
 function getApi() {
     const api = (window as any)?.electronAPI
@@ -102,5 +108,26 @@ export const settingsService = {
         )
 
         return getPlateauTitleDragDropSetting(savedConfig)
+    },
+
+    async getUiTheme(): Promise<UiTheme> {
+        const config = await this.getConfig()
+        return getUiThemeSetting(config)
+    },
+
+    async restoreUiTheme(target?: Pick<HTMLElement, 'dataset'>): Promise<UiTheme> {
+        return restoreUiThemeSetting(
+            () => this.getConfig(),
+            target
+        )
+    },
+
+    async setUiTheme(theme: UiTheme, target?: Pick<HTMLElement, 'dataset'>): Promise<UiTheme> {
+        return persistUiThemeSetting(
+            () => this.getConfig(),
+            (config) => this.setConfig(config),
+            theme,
+            target
+        )
     },
 }

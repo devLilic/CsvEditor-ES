@@ -29,12 +29,12 @@ export function EntityTypeTabsLeft() {
     }
 
     return (
-        <div className="flex gap-2 flex-wrap">
+        <div className="app-entity-tabs flex gap-2 flex-wrap">
             {tabs.map((tab) => (
                 <button
                     key={tab.type}
                     onClick={() => handleChange(tab.type)}
-                    className={`px-3 py-1 rounded text-sm ${
+                    className={`app-tab px-3 py-1 rounded text-sm ${
                         activeEntityType === tab.type
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-200 hover:bg-gray-300'

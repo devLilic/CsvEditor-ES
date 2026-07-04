@@ -357,11 +357,11 @@ export function EntityEditor() {
         : ''
 
     return (
-        <div className="bg-white rounded border p-4 flex flex-col gap-4 min-h-0 min-w-0 max-w-full overflow-hidden">
+        <div className="app-panel app-editor bg-white rounded border p-4 flex flex-col gap-4 min-h-0 min-w-0 max-w-full overflow-hidden">
 
             <div
                 data-testid="entity-preview-container"
-                className="min-h-0 min-w-0 overflow-hidden"
+                className="app-preview-container min-h-0 min-w-0 overflow-hidden"
             >
                 <Preview16x9
                     template={previewTemplate}
@@ -398,25 +398,25 @@ export function EntityEditor() {
                                 <button
                                     type="button"
                                     onClick={() => setPhoneImageModalOpen(true)}
-                                    className="rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                                className="app-button app-button-secondary rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
                                 >
                                     {form.image ? 'Change Photo' : 'Add Photo'}
                                 </button>
 
                                 {form.image && (
-                                    <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-800">
+                                    <div className="app-notification app-notification-success rounded border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-800">
                                         Poză adăugată: {phoneImageFilename}
                                     </div>
                                 )}
 
                                 {phoneImageError && (
-                                    <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                                    <div className="app-notification app-notification-danger rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
                                         {phoneImageError}
                                     </div>
                                 )}
 
                                 {form.name?.trim() && !form.image?.trim() && !phoneImageError && (
-                                    <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                                    <div className="app-notification app-notification-warning rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
                                         Adaugă o poză înainte de salvare.
                                     </div>
                                 )}
@@ -466,7 +466,7 @@ export function EntityEditor() {
                     <button
                         onClick={saveEntity}
                         disabled={!isFormValid()}
-                        className={`flex-1 py-2 rounded text-white ${
+                        className={`app-button app-button-success flex-1 py-2 rounded text-white ${
                             isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
                         }`}
                     >
@@ -477,7 +477,7 @@ export function EntityEditor() {
                         <button
                             type="button"
                             onClick={() => setImportTitlesDialogOpen(true)}
-                            className="ml-6 shrink-0 rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                            className="app-button app-button-secondary ml-6 shrink-0 rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
                         >
                             Importă din backup
                         </button>
@@ -490,7 +490,7 @@ export function EntityEditor() {
                             title="Adauga separator vizual"
                             onClick={addTitleDivider}
                             disabled={isAddingDivider}
-                            className="ml-8 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button app-divider-button ml-8 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <DividerButtonIcon />
                         </button>
@@ -501,7 +501,7 @@ export function EntityEditor() {
 
             {/* QuickTitles doar la TITLES */}
             {editorEntityType === 'titles' && (
-                <div className="border-t pt-3 mt-2 shrink-0">
+                <div className="app-panel-divider border-t pt-3 mt-2 shrink-0">
                     <div className="text-xs text-gray-500 mb-2">Prefixe rapide</div>
                     <QuickTitlesBar onApplyPrefix={applyQuickTitle} focusEditor={focusTitleInput} />
                 </div>

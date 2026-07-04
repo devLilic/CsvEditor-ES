@@ -16,7 +16,7 @@ export function showErrorToast(message: string): void {
     const toast = document.createElement('div')
     toast.id = TOAST_ELEMENT_ID
     toast.setAttribute('role', 'alert')
-    toast.className = 'fixed bottom-4 right-4 z-50 max-w-sm rounded border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-lg'
+    toast.className = 'app-notification app-notification-danger fixed bottom-4 right-4 z-50 max-w-sm rounded border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-lg'
     toast.textContent = message
     document.body.appendChild(toast)
 

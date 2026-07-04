@@ -57,7 +57,7 @@ function DragHandle({ attributes, listeners }: {
             title="Muta elementul"
             {...attributes}
             {...listeners}
-            className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 active:cursor-grabbing"
+            className="app-drag-handle flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 active:cursor-grabbing"
         >
             <span aria-hidden="true" className="text-lg leading-none">=</span>
         </button>
@@ -271,7 +271,7 @@ export function EntityList() {
                             viewType: supportedEntityType ?? undefined,
                         })
                     }
-                    className={`group px-3 py-2 cursor-pointer flex justify-between items-center gap-3 border-b border-l-4
+                    className={`app-list-row group px-3 py-2 cursor-pointer flex justify-between items-center gap-3 border-b border-l-4
                         ${
                             selected
                                 ? 'bg-blue-100 border-l-blue-600'
@@ -323,7 +323,7 @@ export function EntityList() {
                                         item.id
                                     )
                                 }}
-                                className="border border-red-700 bg-red-500 px-2 text-xs text-white rounded hover:bg-red-800"
+                                className="app-button app-button-danger border border-red-700 bg-red-500 px-2 text-xs text-white rounded hover:bg-red-800"
                             >
                                 x
                             </button>
@@ -346,7 +346,7 @@ export function EntityList() {
     }
 
     return (
-        <div className="h-full min-h-0 overflow-y-auto">
+        <div className="app-list h-full min-h-0 overflow-y-auto">
             {canDragPlateauTitles ? (
                 <DndContext
                     sensors={sensors}
@@ -354,13 +354,13 @@ export function EntityList() {
                     onDragEnd={handleDragEnd}
                 >
                     <SortableContext items={sortableItemIds} strategy={verticalListSortingStrategy}>
-                        <div className="rounded border bg-white">
+                        <div className="app-list-panel rounded border bg-white">
                             {filteredItems.map((item) => renderItem(item))}
                         </div>
                     </SortableContext>
                 </DndContext>
             ) : (
-                <div className="rounded border bg-white">
+                <div className="app-list-panel rounded border bg-white">
                     {filteredItems.map((item) => renderItem(item))}
                 </div>
             )}

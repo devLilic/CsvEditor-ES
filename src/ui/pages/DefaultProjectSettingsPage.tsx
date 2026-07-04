@@ -20,6 +20,8 @@ import { phoneImageSettingsService } from '@/features/csv-editor/services/phoneI
 import { csvFileSettingsService } from '@/features/csv-editor/services/csvFileSettingsService'
 import { resolveEntityExportFolder } from '@/features/entity-export/domain/exportPathResolver'
 import { AppUpdatePanel } from '@/ui/components/app-update/AppUpdatePanel'
+import { settingsService } from '@/features/csv-editor/services/settingsService'
+import type { UiTheme } from '@/features/theme/themeResolver'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -31,6 +33,8 @@ export function DefaultProjectSettingsPage() {
     const [status, setStatus] = useState<SaveStatus>('idle')
     const [phoneImageStatus, setPhoneImageStatus] = useState<SaveStatus>('idle')
     const [csvFileStatus, setCsvFileStatus] = useState<SaveStatus>('idle')
+    const [uiTheme, setUiTheme] = useState<UiTheme>('legacy')
+    const [uiThemeStatus, setUiThemeStatus] = useState<SaveStatus>('idle')
 
     useEffect(() => {
         let isMounted = true
@@ -50,6 +54,12 @@ export function DefaultProjectSettingsPage() {
         csvFileSettingsService.getCsvFileSettings().then((storedSettings) => {
             if (isMounted) {
                 setCsvFileSettings(storedSettings)
+            }
+        })
+
+        settingsService.restoreUiTheme().then((storedTheme) => {
+            if (isMounted) {
+                setUiTheme(storedTheme)
             }
         })
 
@@ -200,6 +210,20 @@ export function DefaultProjectSettingsPage() {
         }))
     }
 
+    const handleUiThemeChange = async (nextTheme: UiTheme) => {
+        setUiTheme(nextTheme)
+        setUiThemeStatus('saving')
+
+        try {
+            const savedTheme = await settingsService.setUiTheme(nextTheme)
+            setUiTheme(savedTheme)
+            setUiThemeStatus('saved')
+        } catch {
+            setUiTheme('legacy')
+            setUiThemeStatus('error')
+        }
+    }
+
     const resolvedExportCsvFolder = csvFileSettings.workingCsvPath
         ? resolveEntityExportFolder({
             workingCsvPath: csvFileSettings.workingCsvPath,
@@ -208,7 +232,7 @@ export function DefaultProjectSettingsPage() {
         : ''
 
     return (
-        <main className="min-h-screen bg-gray-50 p-6">
+        <main className="app-settings min-h-screen bg-gray-50 p-6">
             <div className="mx-auto flex max-w-3xl flex-col gap-6">
                 <header className="flex items-center justify-between gap-4">
                     <div>
@@ -223,19 +247,59 @@ export function DefaultProjectSettingsPage() {
                     <button
                         type="button"
                         onClick={() => navigate('/csv-editor')}
-                        className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                        className="app-button rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                     >
                         Înapoi la editor
                     </button>
                 </header>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <section className="app-panel flex flex-col gap-4 rounded bg-white p-5 shadow-sm">
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Aspect interfață
+                        </h2>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input
+                                type="radio"
+                                name="uiTheme"
+                                value="legacy"
+                                checked={uiTheme === 'legacy'}
+                                onChange={() => handleUiThemeChange('legacy')}
+                            />
+                            Clasic
+                        </label>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input
+                                type="radio"
+                                name="uiTheme"
+                                value="metallic"
+                                checked={uiTheme === 'metallic'}
+                                onChange={() => handleUiThemeChange('metallic')}
+                            />
+                            Metallic Gray
+                        </label>
+
+                        {uiThemeStatus === 'saved' && (
+                            <span className="text-sm text-green-700">Salvat.</span>
+                        )}
+
+                        {uiThemeStatus === 'error' && (
+                            <span className="text-sm text-red-700">Setarea nu a putut fi salvată.</span>
+                        )}
+                    </div>
+                </section>
+
+                <form onSubmit={handleSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Titlu implicit</span>
                         <input
                             value={settings.title}
                             onChange={(event) => updateField('title', event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -244,7 +308,7 @@ export function DefaultProjectSettingsPage() {
                         <input
                             value={settings.personName}
                             onChange={(event) => updateField('personName', event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -253,7 +317,7 @@ export function DefaultProjectSettingsPage() {
                         <input
                             value={settings.personOccupation}
                             onChange={(event) => updateField('personOccupation', event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -262,7 +326,7 @@ export function DefaultProjectSettingsPage() {
                         <input
                             value={settings.location}
                             onChange={(event) => updateField('location', event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -271,7 +335,7 @@ export function DefaultProjectSettingsPage() {
                         <input
                             value={settings.hotTitle}
                             onChange={(event) => updateField('hotTitle', event.target.value)}
-                            className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
 
@@ -279,7 +343,7 @@ export function DefaultProjectSettingsPage() {
                         <button
                             type="submit"
                             disabled={status === 'saving'}
-                            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button app-button-primary rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Salvează
                         </button>
@@ -288,7 +352,7 @@ export function DefaultProjectSettingsPage() {
                             type="button"
                             onClick={handleReset}
                             disabled={status === 'saving'}
-                            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Resetează la valori standard
                         </button>
@@ -303,7 +367,7 @@ export function DefaultProjectSettingsPage() {
                     </div>
                 </form>
 
-                <form onSubmit={handlePhoneImageSubmit} className="flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <form onSubmit={handlePhoneImageSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">
                             Setări imagine apel telefonic
@@ -316,12 +380,12 @@ export function DefaultProjectSettingsPage() {
                             <input
                                 value={phoneImageSettings.workPath}
                                 onChange={(event) => updatePhoneImageField('workPath', event.target.value)}
-                                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                                 type="button"
                                 onClick={handleSelectWorkPath}
-                                className="shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                className="app-button shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                             >
                                 Alege folder
                             </button>
@@ -336,7 +400,7 @@ export function DefaultProjectSettingsPage() {
                                 min="1"
                                 value={phoneImageSettings.width}
                                 onChange={(event) => updatePhoneImageField('width', event.target.value)}
-                                className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </label>
 
@@ -347,7 +411,7 @@ export function DefaultProjectSettingsPage() {
                                 min="1"
                                 value={phoneImageSettings.height}
                                 onChange={(event) => updatePhoneImageField('height', event.target.value)}
-                                className="rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </label>
                     </div>
@@ -356,7 +420,7 @@ export function DefaultProjectSettingsPage() {
                         <button
                             type="submit"
                             disabled={phoneImageStatus === 'saving'}
-                            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button app-button-primary rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Salvează
                         </button>
@@ -365,7 +429,7 @@ export function DefaultProjectSettingsPage() {
                             type="button"
                             onClick={handlePhoneImageReset}
                             disabled={phoneImageStatus === 'saving'}
-                            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Resetează la valori standard
                         </button>
@@ -380,7 +444,7 @@ export function DefaultProjectSettingsPage() {
                     </div>
                 </form>
 
-                <form onSubmit={handleCsvFileSubmit} className="flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <form onSubmit={handleCsvFileSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">
                             Setări fișier CSV
@@ -393,12 +457,12 @@ export function DefaultProjectSettingsPage() {
                             <input
                                 value={csvFileSettings.workingCsvPath}
                                 onChange={(event) => updateCsvFileField('workingCsvPath', event.target.value)}
-                                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                                 type="button"
                                 onClick={handleSelectWorkingCsv}
-                                className="shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                className="app-button shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                             >
                                 Alege CSV
                             </button>
@@ -411,12 +475,12 @@ export function DefaultProjectSettingsPage() {
                             <input
                                 value={csvFileSettings.backupFolderPath}
                                 onChange={(event) => updateCsvFileField('backupFolderPath', event.target.value)}
-                                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                                 type="button"
                                 onClick={handleSelectBackupFolder}
-                                className="shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                className="app-button shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                             >
                                 Alege folder backup
                             </button>
@@ -429,12 +493,12 @@ export function DefaultProjectSettingsPage() {
                             <input
                                 value={csvFileSettings.savedProjectsFolderPath}
                                 onChange={(event) => updateCsvFileField('savedProjectsFolderPath', event.target.value)}
-                                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                                 type="button"
                                 onClick={handleSelectSavedProjectsFolder}
-                                className="shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                className="app-button shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                             >
                                 Alege folder proiecte salvate
                             </button>
@@ -448,17 +512,17 @@ export function DefaultProjectSettingsPage() {
                                 aria-label="Export CSV Folder"
                                 value={csvFileSettings.exportCsvFolderPath}
                                 onChange={(event) => updateCsvFileField('exportCsvFolderPath', event.target.value)}
-                                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="app-input min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                                 type="button"
                                 onClick={handleSelectExportCsvFolder}
-                                className="shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                className="app-button shrink-0 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                             >
                                 Alege folder export
                             </button>
                         </div>
-                        <span className="w-fit max-w-full truncate rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+                        <span className="app-chip w-fit max-w-full truncate rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
                             {resolvedExportCsvFolder
                                 ? `Folder efectiv: ${resolvedExportCsvFolder}`
                                 : 'Fallback: folderul Export langa fisierul CSV de lucru'}
@@ -469,7 +533,7 @@ export function DefaultProjectSettingsPage() {
                         <button
                             type="submit"
                             disabled={csvFileStatus === 'saving'}
-                            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button app-button-primary rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Salvează
                         </button>

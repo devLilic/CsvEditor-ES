@@ -99,7 +99,7 @@ export function EditorBody() {
 
     return (
         <div
-            className={`flex-1 grid gap-0 p-4 min-h-0 min-w-0 overflow-hidden ${
+            className={`app-body flex-1 grid gap-0 p-4 min-h-0 min-w-0 overflow-hidden ${
                 isResizing ? 'select-none cursor-col-resize' : ''
             }`}
             style={{
@@ -107,9 +107,9 @@ export function EditorBody() {
             }}
         >
             {/* LEFT */}
-            <div className="bg-white rounded border p-3 flex flex-col min-h-0 min-w-0">
+            <div className="app-panel bg-white rounded border p-3 flex flex-col min-h-0 min-w-0">
                 {!isTedMode && (
-                    <div className="pb-3 border-b">
+                    <div className="app-panel-divider pb-3 border-b">
                         <EntityTypeTabsLeft />
                     </div>
                 )}
@@ -127,7 +127,7 @@ export function EditorBody() {
                 aria-orientation="vertical"
                 onPointerDown={startResize}
                 onDoubleClick={resetWidth}
-                className="group flex cursor-col-resize items-stretch justify-center px-1"
+                className="app-resizer group flex cursor-col-resize items-stretch justify-center px-1"
             >
                 <div className="w-px bg-gray-300 group-hover:bg-blue-500" />
             </div>
