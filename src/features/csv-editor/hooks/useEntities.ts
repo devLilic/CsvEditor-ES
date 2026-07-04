@@ -13,6 +13,7 @@ import { FALLBACK_DEFAULT_PROJECT_SETTINGS } from '../domain/defaultProjectSetti
 import { csvService } from '../services/csvService'
 import { defaultProjectSettingsService } from '../services/defaultProjectSettingsService'
 import { settingsService } from '../services/settingsService'
+import { reorderPlateauTitlesService } from '../services/reorderPlateauTitlesService'
 import { serializeCsv } from '../utils/csvSerializer'
 import * as quickTitlesCsvStorageService from '../../quick-titles/services/quickTitlesCsvStorageService'
 
@@ -40,6 +41,10 @@ export type SavePersonResult =
 
 export type PlateauTitleDividerResult =
     | { ok: true; dividerId?: string }
+    | { ok: false; error?: string }
+
+export type PlateauTitleReorderResult =
+    | { ok: true }
     | { ok: false; error?: string }
 
 const CONSECUTIVE_TITLE_DIVIDERS_ERROR = 'Nu pot fi adăugate două separatoare consecutive.'
@@ -307,6 +312,24 @@ export function useEntities() {
         return { ok: true }
     }, [canModifyPlateauTitleDividers, dispatch, state, writeDividerChange])
 
+    const reorderPlateauTitleItems = useCallback(async (
+        activeId: string,
+        overId: string
+    ): Promise<PlateauTitleReorderResult> => {
+        const section = canModifyPlateauTitleDividers()
+        if (!section) {
+            return { ok: false, error: 'TITLE_REORDER_NOT_ALLOWED' }
+        }
+
+        return reorderPlateauTitlesService.reorder({
+            state,
+            sectionId: section.id,
+            activeId,
+            overId,
+            dispatch,
+        })
+    }, [canModifyPlateauTitleDividers, dispatch, state])
+
     const resetToDefaultProject = useCallback(async (): Promise<ForceStartNewProjectWithoutBackupResult> => {
         const defaultProjectSettings = await defaultProjectSettingsService
             .getDefaultProjectSettings()
@@ -403,6 +426,7 @@ export function useEntities() {
         deleteEntity,
         addPlateauTitleDivider,
         deletePlateauTitleDivider,
+        reorderPlateauTitleItems,
 
         // global ops
         startNewProject,

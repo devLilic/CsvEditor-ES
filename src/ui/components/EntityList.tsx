@@ -1,29 +1,112 @@
 // src/ui/components/EntityList.tsx
-import { useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import {
+    DndContext,
+    KeyboardSensor,
+    PointerSensor,
+    closestCenter,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
     useEntities,
     useSelectedEntity,
     useActiveEntityType,
-    useOnAir,
     isSupportedEntityType,
 } from '@/features/csv-editor'
-import type { EntityType } from '@/features/csv-editor'
+import type { EntityType, PlateauTitleListItem } from '@/features/csv-editor'
+import { reorderPlateauTitleItems as previewPlateauTitleReorder } from '@/features/csv-editor/domain/reorderPlateauTitleItems'
+import { settingsService } from '@/features/csv-editor/services/settingsService'
 import { EmptyState } from './common/EmptyState'
 import { PlateauTitleDivider } from './titles/PlateauTitleDivider'
 import { useEditMode } from '@/ui/context/EditModeContext'
 import { useTitleFilter } from '@/ui/context/TitleFilterContext'
 
+const CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR = 'Nu pot exista două separatoare consecutive.'
+
+function getPlateauItemId(item: any): string {
+    return item.type === 'divider' ? item.id : item.rowId
+}
+
+function getPlateauTitleListItems(items: any[]): PlateauTitleListItem[] {
+    return items.flatMap((item) => {
+        if (item.type === 'divider') return [{ type: 'divider', id: item.id } satisfies PlateauTitleListItem]
+        if (item.entityType === 'titles' && item.rowId) return [{ type: 'title', rowId: item.rowId } satisfies PlateauTitleListItem]
+        return []
+    })
+}
+
+function DragHandle({ attributes, listeners }: { attributes?: Record<string, unknown>; listeners?: Record<string, unknown> }) {
+    return (
+        <button
+            type="button"
+            aria-label="Muta elementul"
+            title="Muta elementul"
+            {...attributes}
+            {...listeners}
+            className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 active:cursor-grabbing"
+        >
+            <span aria-hidden="true" className="text-lg leading-none">=</span>
+        </button>
+    )
+}
+
+function SortableRow({ id, children }: { id: string; children: (dragHandle: ReactNode) => ReactNode }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id })
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+            }}
+            className={isDragging ? 'opacity-60' : undefined}
+        >
+            {children(<DragHandle attributes={attributes} listeners={listeners} />)}
+        </div>
+    )
+}
+
 export function EntityList() {
-    const { activeSectionId, activeSection, getBlockItems, deleteEntity, deletePlateauTitleDivider } =
-        useEntities()
+    const {
+        activeSectionId,
+        activeSection,
+        getBlockItems,
+        deleteEntity,
+        deletePlateauTitleDivider,
+        reorderPlateauTitleItems,
+    } = useEntities()
 
     const { activeEntityType } = useActiveEntityType()
     const { select, isSelected } = useSelectedEntity()
-    const { isOnAir, setOnAir, clearOnAir } = useOnAir()
     const { editMode } = useEditMode()
     const { titleFilter } = useTitleFilter()
     const [dividerDeleteError, setDividerDeleteError] = useState('')
     const [deletingDividerId, setDeletingDividerId] = useState<string | null>(null)
+    const [reorderError, setReorderError] = useState('')
+    const [enablePlateauTitleDragDrop, setEnablePlateauTitleDragDrop] = useState<boolean | null>(null)
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    )
 
     const sectionId = activeSectionId ?? activeSection?.id ?? ''
     const supportedEntityType = isSupportedEntityType(activeEntityType)
@@ -37,6 +120,21 @@ export function EntityList() {
 
         return getBlockItems(sectionId, supportedEntityType)
     }, [getBlockItems, sectionId, supportedEntityType])
+
+    useEffect(() => {
+        let isMounted = true
+
+        settingsService.getPlateauTitleDragDropEnabled().then((enabled) => {
+            if (isMounted) {
+                setEnablePlateauTitleDragDrop(enabled)
+            }
+        })
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
+
     const filteredItems = useMemo(() => {
         if (supportedEntityType !== 'titles' || !normalizedTitleFilter) {
             return items
@@ -65,6 +163,12 @@ export function EntityList() {
     }
 
     const showNr = supportedEntityType === 'titles'
+    const canDragPlateauTitles =
+        activeSection?.kind === 'invited' &&
+        supportedEntityType === 'titles' &&
+        editMode &&
+        enablePlateauTitleDragDrop === true
+    const sortableItemIds = items.map((item: any) => getPlateauItemId(item))
     const titleNumberById = new Map<string, number>()
     items.forEach((item: any) => {
         if (item.type === 'divider' || item.entityType !== 'titles') return
@@ -83,6 +187,141 @@ export function EntityList() {
         }
     }
 
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const activeId = String(event.active.id)
+        const overId = event.over?.id ? String(event.over.id) : ''
+        if (!activeId || !overId || activeId === overId) return
+
+        setReorderError('')
+        const previewResult = previewPlateauTitleReorder(
+            getPlateauTitleListItems(items),
+            activeId,
+            overId
+        )
+
+        if (!previewResult.ok) {
+            if (previewResult.reason === 'consecutive-dividers') {
+                setReorderError(CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR)
+            }
+            return
+        }
+
+        const result = await reorderPlateauTitleItems(activeId, overId)
+        if (!result.ok) {
+            setReorderError(result.error ?? 'TITLE_REORDER_FAILED')
+        }
+    }
+
+    const renderItem = (item: any, dragHandle?: ReactNode) => {
+        let renderedItem: ReactNode
+
+        if (item.type === 'divider') {
+            renderedItem = (
+                <PlateauTitleDivider
+                    dividerId={item.id}
+                    canDelete
+                    isDeleting={deletingDividerId === item.id}
+                    dragHandle={dragHandle}
+                    onDelete={handleDeleteDivider}
+                />
+            )
+        } else {
+            const selected = isSelected(
+                sectionId,
+                item.entityType as EntityType,
+                item.id
+            )
+
+            const isTitle = item.entityType === 'titles'
+            const isPersons = item.entityType === 'persons'
+            const displayNr = isTitle ? titleNumberById.get(item.id) ?? null : null
+            const mainText = isPersons
+                ? item.data?.name ?? ''
+                : item.data?.title ?? item.data?.location ?? ''
+            const subText = isPersons ? item.data?.occupation ?? '' : ''
+
+            renderedItem = (
+                <div
+                    onClick={() =>
+                        select({
+                            sectionId,
+                            entityType: item.entityType,
+                            id: item.id,
+                            viewType: supportedEntityType ?? undefined,
+                        })
+                    }
+                    className={`group px-3 py-2 cursor-pointer flex justify-between items-center gap-3 border-b border-l-4
+                        ${
+                            selected
+                                ? 'bg-blue-100 border-l-blue-600'
+                                : 'hover:bg-gray-100 border-l-transparent'
+                        }
+                    `}
+                >
+                    <div className="flex min-w-0 gap-2 overflow-hidden">
+                        <div className="min-w-0 overflow-hidden">
+                            {showNr && displayNr !== null ? (
+                                <div className="flex min-w-0 gap-2">
+                                    <span className="shrink-0 font-semibold text-gray-500">
+                                        {displayNr}.
+                                    </span>
+                                    <span className="truncate font-bold">
+                                        {mainText}
+                                    </span>
+                                </div>
+                            ) : isPersons ? (
+                                <div className="flex min-w-0 flex-col">
+                                    <span className="truncate font-bold">
+                                        {mainText}
+                                    </span>
+                                    <span className="truncate text-sm text-gray-600">
+                                        {subText}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="truncate font-bold">
+                                    {mainText}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                        {dragHandle}
+                        {editMode && (
+                            <button
+                                title="Sterge"
+                                aria-label="Sterge"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteEntity(
+                                        sectionId,
+                                        item.entityType,
+                                        item.id
+                                    )
+                                }}
+                                className="border border-red-700 bg-red-500 px-2 text-xs text-white rounded hover:bg-red-800"
+                            >
+                                x
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )
+        }
+
+        const itemId = getPlateauItemId(item)
+        if (!canDragPlateauTitles || dragHandle) {
+            return <div key={itemId}>{renderedItem}</div>
+        }
+
+        return (
+            <SortableRow key={itemId} id={itemId}>
+                {(dragHandle) => renderItem(item, dragHandle)}
+            </SortableRow>
+        )
+    }
+
     return (
         <div className="h-full min-h-0 overflow-y-auto">
             {dividerDeleteError && (
@@ -90,141 +329,28 @@ export function EntityList() {
                     {dividerDeleteError}
                 </div>
             )}
-            <div className="rounded border bg-white">
-                {filteredItems.map((item: any) => {
-                    if (item.type === 'divider') {
-                        return (
-                            <PlateauTitleDivider
-                                key={item.id}
-                                dividerId={item.id}
-                                canDelete
-                                isDeleting={deletingDividerId === item.id}
-                                onDelete={handleDeleteDivider}
-                            />
-                        )
-                    }
-
-                    const selected = isSelected(
-                        sectionId,
-                        item.entityType as EntityType,
-                        item.id
-                    )
-
-                    const active = isOnAir(item.entityType, item.id)
-
-                    const isTitle = item.entityType === 'titles'
-                    const isPersons = item.entityType === 'persons'
-
-                    const displayNr = isTitle
-                        ? titleNumberById.get(item.id) ?? null
-                        : null
-
-                    const mainText = isPersons
-                        ? item.data?.name ?? ''
-                        : item.data?.title ?? item.data?.location ?? ''
-
-                    const subText = isPersons ? item.data?.occupation ?? '' : ''
-
-                    return (
-                        <div
-                            key={item.id}
-                            onClick={() =>
-                                select({
-                                    sectionId,
-                                    entityType: item.entityType,
-                                    id: item.id,
-                                    viewType: supportedEntityType ?? undefined,
-                                })
-                            }
-                            className={`group px-3 py-2 cursor-pointer flex justify-between items-center gap-3 border-b border-l-4
-                                ${
-                                    selected
-                                        ? 'bg-blue-100 border-l-blue-600'
-                                        : 'hover:bg-gray-100 border-l-transparent'
-                                }
-                                ${
-                                    active ? 'border-l-red-600 bg-red-50' : ''
-                                }
-                            `}
-                        >
-                            <div className="flex min-w-0 gap-2 overflow-hidden">
-                                {editMode && (
-                                    <button
-                                        title="Sterge"
-                                        aria-label="Sterge"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            deleteEntity(
-                                                sectionId,
-                                                item.entityType,
-                                                item.id
-                                            )
-                                        }}
-                                        className="border border-red-700 bg-red-500 px-2 text-xs text-white rounded hover:bg-red-800"
-                                    >
-                                        ×
-                                    </button>
-                                )}
-
-                                <div className="min-w-0 overflow-hidden">
-                                    {showNr && displayNr !== null ? (
-                                        <div className="flex min-w-0 gap-2">
-                                            <span className="shrink-0 font-semibold text-gray-500">
-                                                {displayNr}.
-                                            </span>
-                                            <span className="truncate font-bold">
-                                                {mainText}
-                                            </span>
-                                        </div>
-                                    ) : isPersons ? (
-                                        <div className="flex min-w-0 flex-col">
-                                            <span className="truncate font-bold">
-                                                {mainText}
-                                            </span>
-                                            <span className="truncate text-sm text-gray-600">
-                                                {subText}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="truncate font-bold">
-                                            {mainText}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex shrink-0 items-center gap-2">
-                                {active ? (
-                                    <>
-                                        <span className="text-xs font-semibold text-red-600">
-                                            ON AIR
-                                        </span>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                clearOnAir(item.entityType)
-                                            }}
-                                            className="rounded border border-gray-500 bg-gray-200 px-2 py-1 text-xs hover:bg-gray-300"
-                                        >
-                                            STOP
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            setOnAir(item.entityType, item.id)
-                                        }}
-                                        className="rounded border border-red-500 px-2 py-1 text-xs text-red-500 opacity-0 transition-opacity duration-150 hover:bg-red-700 hover:text-white group-hover:opacity-100"
-                                    >
-                                        ON AIR
-                                    </button>
-                                )}
-                            </div>
+            {reorderError && (
+                <div role="alert" className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {reorderError}
+                </div>
+            )}
+            {canDragPlateauTitles ? (
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext items={sortableItemIds} strategy={verticalListSortingStrategy}>
+                        <div className="rounded border bg-white">
+                            {filteredItems.map((item) => renderItem(item))}
                         </div>
-                    )
-                })}
-            </div>
+                    </SortableContext>
+                </DndContext>
+            ) : (
+                <div className="rounded border bg-white">
+                    {filteredItems.map((item) => renderItem(item))}
+                </div>
+            )}
         </div>
     )
 }
