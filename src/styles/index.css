@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --duplicate-title-bg: #fff4b8;
+    --duplicate-title-border: #b88a00;
+    --duplicate-title-text: #332800;
+}
+
 
 /* subtle shake for invalid input */
 @keyframes subtle-shake {

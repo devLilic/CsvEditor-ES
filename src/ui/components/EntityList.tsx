@@ -23,6 +23,7 @@ import {
     isSupportedEntityType,
 } from '@/features/csv-editor'
 import type { EntityType, PlateauTitleListItem } from '@/features/csv-editor'
+import { findDuplicateTitleIds } from '@/features/csv-editor/domain/findDuplicateTitles'
 import { reorderPlateauTitleItems as previewPlateauTitleReorder } from '@/features/csv-editor/domain/reorderPlateauTitleItems'
 import { settingsService } from '@/features/csv-editor/services/settingsService'
 import { EmptyState } from './common/EmptyState'
@@ -152,6 +153,22 @@ export function EntityList() {
                 .includes(normalizedTitleFilter)
         )
     }, [items, normalizedTitleFilter, supportedEntityType])
+    const duplicatePlateauTitleIds = useMemo(() => {
+        if (activeSection?.kind !== 'invited' || supportedEntityType !== 'titles') {
+            return new Set<string>()
+        }
+
+        return findDuplicateTitleIds(
+            items.flatMap((item: any) => {
+                if (item.type === 'divider' || item.entityType !== 'titles') return []
+
+                return [{
+                    id: item.id,
+                    title: item.data?.title ?? '',
+                }]
+            })
+        )
+    }, [activeSection?.kind, items, supportedEntityType])
 
     if (!sectionId) {
         return <EmptyState text="Nu exista sectiune activa." />
@@ -237,6 +254,7 @@ export function EntityList() {
 
             const isTitle = item.entityType === 'titles'
             const isPersons = item.entityType === 'persons'
+            const isDuplicatePlateauTitle = isTitle && duplicatePlateauTitleIds.has(item.id)
             const displayNr = isTitle ? titleNumberById.get(item.id) ?? null : null
             const mainText = isPersons
                 ? item.data?.name ?? ''
@@ -257,6 +275,8 @@ export function EntityList() {
                         ${
                             selected
                                 ? 'bg-blue-100 border-l-blue-600'
+                                : isDuplicatePlateauTitle
+                                    ? 'bg-[var(--duplicate-title-bg)] hover:bg-[var(--duplicate-title-bg)] border-l-[var(--duplicate-title-border)] text-[var(--duplicate-title-text)]'
                                 : 'hover:bg-gray-100 border-l-transparent'
                         }
                     `}
