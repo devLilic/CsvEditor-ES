@@ -200,6 +200,19 @@ describe('EntityList title drag-and-drop', () => {
         expect(Boolean(handle.compareDocumentPosition(number) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
     })
 
+    it('renders the divider drag handle before the divider line', async () => {
+        renderEntityList()
+        await screen.findAllByRole('button', { name: 'Muta elementul' })
+
+        const divider = (await screen.findAllByTestId('plateau-title-divider'))[0]
+        const handle = divider.querySelector('button[aria-label="Muta elementul"]')
+        const line = divider.querySelector('[role="separator"]')
+
+        expect(handle).not.toBeNull()
+        expect(line).not.toBeNull()
+        expect(Boolean(handle!.compareDocumentPosition(line!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
+    })
+
     it('hides handles in normal mode', () => {
         renderEntityList({ editMode: false })
 

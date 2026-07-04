@@ -20,13 +20,13 @@ export function PlateauTitleDivider({
             className="group flex min-h-3 items-center gap-3 rounded bg-green-100 px-3 py-0.5"
             data-testid="plateau-title-divider"
         >
+            {dragHandle}
+
             <div
                 role="separator"
                 aria-orientation="horizontal"
                 className="h-px flex-1 bg-green-500"
             />
-
-            {dragHandle}
 
             {canDelete && (
                 <button
