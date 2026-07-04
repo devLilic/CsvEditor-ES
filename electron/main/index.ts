@@ -10,6 +10,7 @@ import { registerSettingsHandlers } from './settings-handlers'
 import { registerQuickTitlesHandlers } from './quick-titles-handlers'
 import { registerPhoneImageHandlers } from './phone-image-handlers'
 import { registerTemplateEditorHandlers } from './template-editor-handlers'
+import { registerTitleBackupHandlers } from './title-backup-handlers'
 import { IPC_CHANNELS } from '../../src/shared/ipc-channels'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -147,6 +148,7 @@ async function createWindow() {
   registerCsvProjectHandlers(win)
   registerQuickTitlesHandlers(win)
   registerSettingsHandlers(win)
+  registerTitleBackupHandlers()
   registerPhoneImageHandlers()
   registerTemplateEditorHandlers()
   // =========================

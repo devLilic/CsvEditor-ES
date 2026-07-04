@@ -29,6 +29,7 @@ export interface ExportEntityCsvFilesInput {
     csvs: EntityExportCsvs
     retryCount?: number
     onError?: (error: EntityExportError) => void
+    afterTitlesExport?: () => Promise<void>
 }
 
 export interface ExportEntityCsvFilesFromFullCsvContentInput {
@@ -36,6 +37,7 @@ export interface ExportEntityCsvFilesFromFullCsvContentInput {
     content: string
     retryCount?: number
     onError?: (error: EntityExportError) => void
+    afterTitlesExport?: () => Promise<void>
 }
 
 export interface ExportEntityCsvFilesFromEntitiesInput {
@@ -43,6 +45,7 @@ export interface ExportEntityCsvFilesFromEntitiesInput {
     entities: EntitiesState
     retryCount?: number
     onError?: (error: EntityExportError) => void
+    afterTitlesExport?: () => Promise<void>
 }
 
 export interface ExportSingleEntityCsvInput {
@@ -184,6 +187,10 @@ export async function exportEntityCsvFiles(input: ExportEntityCsvFilesInput): Pr
         if (!result.ok) {
             return result
         }
+
+        if (kind === 'titles') {
+            await input.afterTitlesExport?.()
+        }
     }
 
     return { ok: true }
@@ -197,6 +204,7 @@ export async function exportEntityCsvFilesFromFullCsvContent(
         csvs: mapFullCsvContentToExportCsvs(input.content),
         retryCount: input.retryCount,
         onError: input.onError,
+        afterTitlesExport: input.afterTitlesExport,
     })
 }
 
@@ -208,5 +216,6 @@ export async function exportEntityCsvFilesFromEntities(
         csvs: mapEntitiesStateToExportCsvs(input.entities),
         retryCount: input.retryCount,
         onError: input.onError,
+        afterTitlesExport: input.afterTitlesExport,
     })
 }

@@ -10,6 +10,10 @@ export const IPC_CHANNELS = {
     CSV_PROJECT_SAVE_AS: "csv-project:save-as",
     CSV_PROJECT_LOAD_INTO_WORKING: "csv-project:load-into-working",
     CSV_PROJECT_DELETE: "csv-project:delete",
+    TITLE_BACKUP_RESERVE: "title-backup:reserve",
+    TITLE_BACKUP_LIST: "title-backup:list",
+    TITLE_BACKUP_READ: "title-backup:read",
+    TITLE_BACKUP_WRITE: "title-backup:write",
 
     SETTINGS_GET_QUICK_TITLES: "settings:get-quickTitles",
     SETTINGS_SET_QUICK_TITLES: "settings:set-quickTitles",
