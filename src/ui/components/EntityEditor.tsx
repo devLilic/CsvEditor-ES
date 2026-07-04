@@ -26,6 +26,7 @@ import { InputField } from './common/InputField'
 import { PhoneImageModal } from './phone-image/PhoneImageModal'
 import { PersonQuickTitleDialog } from './quick-titles/PersonQuickTitleDialog'
 import { showErrorToast } from './common/toast'
+import { ImportTitlesFromBackupDialog } from './title-backup/ImportTitlesFromBackupDialog'
 
 type FormState = {
     title?: string
@@ -62,6 +63,7 @@ export function EntityEditor() {
         updateEntity,
         savePersonEntity,
         addPlateauTitleDivider,
+        importPlateauTitlesFromBackup,
     } = useEntities()
 
     const { selected, clearSelection } = useSelectedEntity()
@@ -77,6 +79,7 @@ export function EntityEditor() {
     const [phoneImageError, setPhoneImageError] = useState<string | null>(null)
     const [phoneImageModalOpen, setPhoneImageModalOpen] = useState(false)
     const [isAddingDivider, setIsAddingDivider] = useState(false)
+    const [importTitlesDialogOpen, setImportTitlesDialogOpen] = useState(false)
     const [quickTitleDialog, setQuickTitleDialog] = useState({
         open: false,
         initialValue: '',
@@ -251,6 +254,7 @@ export function EntityEditor() {
         activeSection?.kind === 'invited' &&
         activeEntityType === 'titles' &&
         editorEntityType === 'titles'
+    const canImportTitlesFromBackup = canAddTitleDivider
 
     const addTitleDivider = async () => {
         if (!canAddTitleDivider || isAddingDivider) return
@@ -469,6 +473,16 @@ export function EntityEditor() {
                         {selected ? 'Update' : 'Adaugă'}
                     </button>
 
+                    {canImportTitlesFromBackup && (
+                        <button
+                            type="button"
+                            onClick={() => setImportTitlesDialogOpen(true)}
+                            className="ml-6 shrink-0 rounded border border-blue-500 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                        >
+                            Importă din backup
+                        </button>
+                    )}
+
                     {canAddTitleDivider && (
                         <button
                             type="button"
@@ -522,6 +536,20 @@ export function EntityEditor() {
                     }
                 }}
                 onCancel={() => setQuickTitleDialog((prev) => ({ ...prev, open: false, error: '' }))}
+            />
+
+            <ImportTitlesFromBackupDialog
+                open={importTitlesDialogOpen}
+                onClose={() => setImportTitlesDialogOpen(false)}
+                onImport={async (items) => {
+                    const result = await importPlateauTitlesFromBackup(items)
+
+                    if (!result.ok) {
+                        showErrorToast(result.error)
+                    }
+
+                    return result
+                }}
             />
         </div>
     )

@@ -16,6 +16,8 @@ import { settingsService } from '../services/settingsService'
 import { reorderPlateauTitlesService } from '../services/reorderPlateauTitlesService'
 import { serializeCsv } from '../utils/csvSerializer'
 import * as quickTitlesCsvStorageService from '../../quick-titles/services/quickTitlesCsvStorageService'
+import type { TitleBackupListItem } from '@/features/title-backup/domain/titleBackupCsv'
+import { importPlateauTitles } from '@/features/title-backup/services/importPlateauTitlesService'
 import { titleBackupReservationService } from '@/features/title-backup/services/titleBackupReservationService'
 
 type BlockItem =
@@ -410,6 +412,23 @@ export function useEntities() {
         [resetToDefaultProject]
     )
 
+    const importPlateauTitlesFromBackup = useCallback(async (
+        selectedItems: TitleBackupListItem[]
+    ) => importPlateauTitles({
+        state,
+        selectedItems,
+        dispatch,
+        deps: {
+            createId: uuidv4,
+            // csv:write in Electron already persists the full CSV and all derived export files in order.
+            writeFullCsv: (content) => csvService.write(content),
+            writePaTitlesCsv: async () => ({ ok: true }),
+            getActiveTitleBackupFile: async () => null,
+            writeTitleBackup: async () => ({ ok: true }),
+            writePaTitlesWithHotCsv: async () => ({ ok: true }),
+        },
+    }), [dispatch, state])
+
     return {
         // state
         sections,
@@ -441,6 +460,7 @@ export function useEntities() {
         // global ops
         startNewProject,
         forceStartNewProjectWithoutBackup,
+        importPlateauTitlesFromBackup,
         // Legacy alias kept temporarily for old consumers. New code should use startNewProject.
         clearAll: startNewProject,
     }
