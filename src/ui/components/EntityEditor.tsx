@@ -42,6 +42,16 @@ function isEntityTypeAllowedInSection(entityType: EntityType, sectionKind?: stri
     return sectionKind !== 'beta' || entityType === 'titles' || entityType === 'persons'
 }
 
+function DividerButtonIcon() {
+    return (
+        <span className="relative block h-7 w-9" aria-hidden="true">
+            <span className="absolute left-0 top-1 h-5 w-3 rounded-l-md border-y-[5px] border-l-[5px] border-gray-800" />
+            <span className="absolute right-0 top-1 h-5 w-3 rounded-r-md border-y-[5px] border-r-[5px] border-gray-800" />
+            <span className="absolute left-1/2 top-0 h-7 w-1.5 -translate-x-1/2 rounded-full bg-gray-800" />
+        </span>
+    )
+}
+
 export function EntityEditor() {
     const {
         activeSectionId,
@@ -449,27 +459,30 @@ export function EntityEditor() {
             </div>
 
             <div className="flex flex-col gap-2 shrink-0">
-                <button
-                    onClick={saveEntity}
-                    disabled={!isFormValid()}
-                    className={`py-2 rounded text-white ${
-                        isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                    {selected ? 'Update' : 'Adaugă'}
-                </button>
-
-                {canAddTitleDivider && (
+                <div className="flex items-center">
                     <button
-                        type="button"
-                        title="Adauga separator vizual"
-                        onClick={addTitleDivider}
-                        disabled={isAddingDivider}
-                        className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={saveEntity}
+                        disabled={!isFormValid()}
+                        className={`flex-1 py-2 rounded text-white ${
+                            isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+                        }`}
                     >
-                        Separator
+                        {selected ? 'Update' : 'Adaugă'}
                     </button>
-                )}
+
+                    {canAddTitleDivider && (
+                        <button
+                            type="button"
+                            aria-label="Adauga separator vizual"
+                            title="Adauga separator vizual"
+                            onClick={addTitleDivider}
+                            disabled={isAddingDivider}
+                            className="ml-8 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <DividerButtonIcon />
+                        </button>
+                    )}
+                </div>
 
                 {dividerError && (
                     <div role="alert" className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">

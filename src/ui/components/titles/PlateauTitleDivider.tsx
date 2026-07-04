@@ -13,13 +13,13 @@ export function PlateauTitleDivider({
 }: PlateauTitleDividerProps) {
     return (
         <div
-            className="group flex items-center gap-3 px-3 py-3"
+            className="group flex min-h-6 items-center gap-3 rounded bg-green-100 px-3 py-1"
             data-testid="plateau-title-divider"
         >
             <div
                 role="separator"
                 aria-orientation="horizontal"
-                className="h-px flex-1 bg-gray-300"
+                className="h-px flex-1 bg-green-500"
             />
 
             {canDelete && (
