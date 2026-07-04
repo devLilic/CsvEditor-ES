@@ -8,6 +8,7 @@ import { useCsvContext } from '../context/CsvContext'
 import { createDefaultProjectEntities } from '../domain/defaultProject'
 import { defaultProjectSettingsService } from '../services/defaultProjectSettingsService'
 import { csvFileSettingsService } from '../services/csvFileSettingsService'
+import { titleBackupReservationService } from '@/features/title-backup/services/titleBackupReservationService'
 
 /**
  * Hook responsabil exclusiv de initializarea CSV:
@@ -32,6 +33,11 @@ export function useCsvInitialization() {
 
         ;(async () => {
             const csvFileSettings = await csvFileSettingsService.getCsvFileSettings()
+            const titleBackupReservation = await titleBackupReservationService.reserveActiveTitleBackup(false)
+            if (!titleBackupReservation.ok) {
+                console.error('Failed to reserve title backup:', titleBackupReservation.error)
+            }
+
             if (csvFileSettings.workingCsvPath) {
                 const workingCsv = await csvService.getWorkingCsv()
                 if (workingCsv.ok && workingCsv.content) {

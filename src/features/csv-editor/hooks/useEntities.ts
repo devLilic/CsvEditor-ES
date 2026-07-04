@@ -18,6 +18,7 @@ import { serializeCsv } from '../utils/csvSerializer'
 import * as quickTitlesCsvStorageService from '../../quick-titles/services/quickTitlesCsvStorageService'
 import type { TitleBackupListItem } from '@/features/title-backup/domain/titleBackupCsv'
 import { importPlateauTitles } from '@/features/title-backup/services/importPlateauTitlesService'
+import { titleBackupReservationService } from '@/features/title-backup/services/titleBackupReservationService'
 
 type BlockItem =
     | { type: 'title'; entityType: 'titles'; id: string; rowId: string; data: SimpleTitle }
@@ -340,6 +341,15 @@ export function useEntities() {
                 return FALLBACK_DEFAULT_PROJECT_SETTINGS
             })
         const nextEntities = createDefaultProjectEntities(defaultProjectSettings)
+
+        const titleBackupReservation = await titleBackupReservationService.reserveActiveTitleBackup(true)
+        if (!titleBackupReservation.ok) {
+            console.error('Failed to reserve title backup for new project:', titleBackupReservation.error)
+            return {
+                ok: false,
+                error: `Title backup reserve failed: ${titleBackupReservation.error ?? 'UNKNOWN_ERROR'}`,
+            }
+        }
 
         // QuickTitles belong to the current project workflow; clear the authoritative CSV after backup succeeds or explicit override.
         const quickTitlesClearResult = await quickTitlesCsvStorageService.clearQuickTitlesCsv()

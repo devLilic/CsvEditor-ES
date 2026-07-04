@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     cleanupOldTitleBackups,
     listTitleBackupFiles,
+    writeTitleBackupWithRetention,
     writeTitleBackupAtomic,
     type TitleBackupFs,
 } from './title-backup-retention'
@@ -198,5 +199,27 @@ describe('title backup retention', () => {
             `${filePath('03_07_2026_titluri.csv')}.2.tmp`,
             `${filePath('03_07_2026_titluri.csv')}.3.tmp`,
         ])
+    })
+
+    it('writes the final file in the configured backup folder', async () => {
+        const writeFile = vi.fn().mockResolvedValue(undefined)
+        const rename = vi.fn().mockResolvedValue(undefined)
+
+        const result = await writeTitleBackupWithRetention({
+            backupFolderPath,
+            filename: '03_07_2026_titluri.csv',
+            content: 'Primul titlu',
+            fs: createFs({ writeFile, rename }),
+        })
+
+        expect(result).toEqual({
+            ok: true,
+            filename: '03_07_2026_titluri.csv',
+            fullPath: filePath('03_07_2026_titluri.csv'),
+        })
+        expect(rename).toHaveBeenCalledWith(
+            `${filePath('03_07_2026_titluri.csv')}.1.tmp`,
+            filePath('03_07_2026_titluri.csv'),
+        )
     })
 })

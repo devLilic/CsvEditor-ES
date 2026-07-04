@@ -13,4 +13,5 @@ beforeEach(() => {
     }
 
     vi.clearAllMocks()
+    ipcMock.reserveTitleBackup.mockResolvedValue({ ok: true, filename: '03_07_2026_titluri.csv' })
 })
