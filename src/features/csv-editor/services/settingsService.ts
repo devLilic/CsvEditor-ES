@@ -1,5 +1,9 @@
 // src/features/settings/services/settingsService.ts
 import type { AppConfig } from '@/shared/ipc-types'
+import {
+    createConfigWithPlateauTitleDragDropSetting,
+    getPlateauTitleDragDropSetting,
+} from '@/features/settings/plateauTitleDragDropSetting'
 
 function getApi() {
     const api = (window as any)?.electronAPI
@@ -84,5 +88,19 @@ export const settingsService = {
         } catch {
             return {}
         }
+    },
+
+    async getPlateauTitleDragDropEnabled(): Promise<boolean> {
+        const config = await this.getConfig()
+        return getPlateauTitleDragDropSetting(config)
+    },
+
+    async setPlateauTitleDragDropEnabled(enabled: boolean): Promise<boolean> {
+        const currentConfig = await this.getConfig()
+        const savedConfig = await this.setConfig(
+            createConfigWithPlateauTitleDragDropSetting(currentConfig, enabled)
+        )
+
+        return getPlateauTitleDragDropSetting(savedConfig)
     },
 }

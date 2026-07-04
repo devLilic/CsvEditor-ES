@@ -230,7 +230,7 @@ function updateEntityInSection(section: CsvSection, entityType: EntityType, id: 
 
 function isSlotOccupied(row: SectionRow, entityType: EntityType): boolean {
     switch (getStorageEntityType(entityType)) {
-        case EntityTypes.TITLES: return Boolean(row.title)
+        case EntityTypes.TITLES: return Boolean(row.title || row.titleDivider)
         case EntityTypes.PERSONS: return Boolean(row.person)
         case EntityTypes.LOCATIONS: return Boolean(row.location)
         case EntityTypes.HOT_TITLES: return Boolean(row.hotTitle)
@@ -268,9 +268,37 @@ function deleteEntityInSection(section: CsvSection, entityType: EntityType, id: 
             return r
         })
         // optional cleanup: remove rows that became empty
-        .filter((r) => Boolean(r.title || r.person || r.location || r.hotTitle || r.waitTitle || r.waitLocation))
+        .filter((r) => Boolean(r.title || r.titleDivider || r.person || r.location || r.hotTitle || r.waitTitle || r.waitLocation))
 
-    return { ...section, rows }
+    return { ...section, rows: collapseConsecutivePlateauTitleDividers(rows) }
+}
+
+function collapseConsecutivePlateauTitleDividers(rows: SectionRow[]): SectionRow[] {
+    const nextRows: SectionRow[] = []
+    let previousPlateauItemWasDivider = false
+
+    for (const row of rows) {
+        if (row.titleDivider) {
+            if (previousPlateauItemWasDivider) {
+                const rowWithoutDivider = { ...row, titleDivider: undefined }
+                if (rowWithoutDivider.title || rowWithoutDivider.person || rowWithoutDivider.location || rowWithoutDivider.hotTitle || rowWithoutDivider.waitTitle || rowWithoutDivider.waitLocation) {
+                    nextRows.push(rowWithoutDivider)
+                }
+                continue
+            }
+
+            nextRows.push(row)
+            previousPlateauItemWasDivider = true
+            continue
+        }
+
+        nextRows.push(row)
+        if (row.title) {
+            previousPlateauItemWasDivider = false
+        }
+    }
+
+    return nextRows
 }
 
 function getPlateauTitleListItems(rows: SectionRow[]): PlateauTitleListItem[] {
