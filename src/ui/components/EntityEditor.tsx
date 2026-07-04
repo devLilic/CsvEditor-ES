@@ -510,7 +510,7 @@ export function EntityEditor() {
                     <button
                         onClick={saveEntity}
                         disabled={!isFormValid()}
-                        className={`app-button app-button-success flex-1 py-2 rounded text-white ${
+                        className={`app-button app-button-primary app-work-primary-button flex-1 py-2 rounded text-white ${
                             isFormValid() ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
                         }`}
                     >
@@ -523,7 +523,7 @@ export function EntityEditor() {
                             aria-label="Importă din arhivă"
                             title="Importă din arhivă"
                             onClick={() => setImportTitlesDialogOpen(true)}
-                            className="app-button app-button-secondary ml-6 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            className="app-button app-button-secondary app-import-backup-button ml-6 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
                         >
                             <ArchiveImportIcon />
                         </button>

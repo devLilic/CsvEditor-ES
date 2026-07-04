@@ -34,13 +34,14 @@ export function EntityTypeTabsLeft() {
                 <button
                     key={tab.type}
                     onClick={() => handleChange(tab.type)}
-                    className={`app-tab px-3 py-1 rounded text-sm ${
+                    className={`app-tab app-entity-tab inline-flex items-center gap-2 px-3 py-1 rounded text-sm ${
                         activeEntityType === tab.type
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 hover:bg-gray-300'
+                            ? 'app-tab-active bg-blue-600 text-white'
+                            : 'app-tab-inactive bg-gray-200 hover:bg-gray-300'
                     }`}
                 >
-                    {tab.label}
+                    <span className="app-entity-tab-icon" aria-hidden="true" />
+                    <span>{tab.label}</span>
                 </button>
             ))}
         </div>

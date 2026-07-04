@@ -286,7 +286,7 @@ export function EntityList() {
                         <div className="min-w-0 overflow-hidden">
                             {showNr && displayNr !== null ? (
                                 <div className="flex min-w-0 gap-2">
-                                    <span className="shrink-0 font-semibold text-gray-500">
+                                    <span className="app-title-number shrink-0 font-semibold text-gray-500">
                                         {displayNr}.
                                     </span>
                                     <span className="truncate font-bold">
@@ -310,7 +310,7 @@ export function EntityList() {
                         </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="app-row-actions flex shrink-0 items-center gap-2">
                         {editMode && (
                             <button
                                 title="Sterge"

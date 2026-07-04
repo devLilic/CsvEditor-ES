@@ -147,7 +147,7 @@ export function ImportTitlesFromBackupDialog({
             className="app-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         >
             <div className="app-modal flex max-h-[85vh] w-full max-w-4xl flex-col rounded bg-white p-5 shadow-lg">
-                <div className="flex items-center justify-between gap-4">
+                <div className="app-modal-header flex items-center justify-between gap-4">
                     <h2 id="title-backup-import-title" className="text-lg font-semibold text-gray-900">
                         Import titluri din backup
                     </h2>
@@ -167,7 +167,7 @@ export function ImportTitlesFromBackupDialog({
                     </div>
                 )}
 
-                <div className="mt-5 grid min-h-0 flex-1 grid-cols-[minmax(180px,260px)_1fr] gap-4">
+                <div className="app-modal-body mt-5 grid min-h-0 flex-1 grid-cols-[minmax(180px,260px)_1fr] gap-4">
                     <div className="app-panel min-h-0 overflow-y-auto rounded border border-gray-200">
                         {files.length === 0 ? (
                             <p className="px-3 py-2 text-sm text-gray-600">Nu exista backupuri de titluri.</p>
@@ -235,7 +235,7 @@ export function ImportTitlesFromBackupDialog({
                     </div>
                 </div>
 
-                <div className="mt-5 flex justify-end gap-2">
+                <div className="app-modal-footer mt-5 flex justify-end gap-2">
                     <button
                         type="button"
                         onClick={onClose}
