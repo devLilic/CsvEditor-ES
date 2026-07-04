@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { EntityExportFailureNotification, RendererApi } from '@/shared/ipc-types'
 
+const NOTIFICATION_TIMEOUT_MS = 3000
+
 const EXPORT_FAILURE_MESSAGE = [
     'Nu s-a putut actualiza fisierul CSV pentru emisie.',
     'Verifica folderul de export sau conexiunea la disc.',
@@ -34,15 +36,25 @@ export function EntityExportFailureAlert() {
         }
     }, [])
 
+    useEffect(() => {
+        if (!notification) return
+
+        const timeoutId = window.setTimeout(() => {
+            setNotification(null)
+        }, NOTIFICATION_TIMEOUT_MS)
+
+        return () => window.clearTimeout(timeoutId)
+    }, [notification])
+
     if (!notification) {
         return null
     }
 
     return (
-        <div className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm">
             <div
                 role="alert"
-                className="w-full max-w-2xl rounded border border-red-400 bg-red-50 px-4 py-3 text-sm text-red-900 shadow-lg"
+                className="rounded border border-red-400 bg-red-50 px-4 py-3 text-sm text-red-900 shadow-lg"
             >
                 <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">

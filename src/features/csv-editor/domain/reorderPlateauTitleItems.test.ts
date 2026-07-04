@@ -65,7 +65,7 @@ describe('reorderPlateauTitleItems', () => {
         expect(result).toEqual({ ok: false, reason: 'consecutive-dividers' })
     })
 
-    it('refuses a move that produces consecutive dividers', () => {
+    it('combines consecutive dividers created by moving a title', () => {
         const items = [
             title('title-1'),
             divider('divider-1'),
@@ -76,7 +76,31 @@ describe('reorderPlateauTitleItems', () => {
 
         const result = reorderPlateauTitleItems(items, 'title-2', 'title-3')
 
-        expect(result).toEqual({ ok: false, reason: 'consecutive-dividers' })
+        expect(result.ok).toBe(true)
+        expect(result.ok ? ids(result.items) : []).toEqual([
+            'title-1',
+            'divider-1',
+            'title-3',
+            'title-2',
+        ])
+    })
+
+    it('combines the two dividers left after moving T2 before D1', () => {
+        const items = [
+            title('title-1'),
+            divider('divider-1'),
+            title('title-2'),
+            divider('divider-2'),
+        ]
+
+        const result = reorderPlateauTitleItems(items, 'title-2', 'divider-1')
+
+        expect(result.ok).toBe(true)
+        expect(result.ok ? ids(result.items) : []).toEqual([
+            'title-1',
+            'title-2',
+            'divider-1',
+        ])
     })
 
     it('keeps all items without duplicates', () => {

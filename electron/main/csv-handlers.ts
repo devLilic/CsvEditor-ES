@@ -4,10 +4,17 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { IPC_CHANNELS } from '../../src/shared/ipc-channels'
 import type { CsvFileDescriptor } from '../../src/shared/ipc-types'
-import { getCsvFilePath, getCsvFileSettings, setCsvFilePath } from '../store'
+import { getAppConfig, getCsvFilePath, getCsvFileSettings, setAppConfig, setCsvFilePath } from '../store'
 import { writeCsvBackup } from './csv-backup'
 import { resolveEntityExportPaths } from '../../src/features/entity-export/domain/exportPathResolver'
 import { notifyEntityExportFailure } from './entity-export-notification'
+import { parseCsv } from '../../src/features/csv-editor/utils/csvParser'
+import {
+    mapPlateauItemsToTitleBackupItems,
+} from '../../src/features/title-backup/services/writeActiveTitleBackup'
+import { serializeTitleBackup } from '../../src/features/title-backup/domain/titleBackupCsv'
+import { getActiveTitleBackupFile } from '../../src/features/title-backup/domain/activeTitleBackupFile'
+import { reserveTitleBackupName, writeTitleBackupWithRetention } from './title-backup-retention'
 import {
     exportEntityCsvFilesFromFullCsvContent,
     type EntityExportResult,
@@ -76,6 +83,47 @@ async function exportEntityCsvsAfterWorkingCsvWrite(
             paths: exportPaths,
             content,
             onError: (error) => notifyEntityExportFailure(mainWindow, error),
+            afterTitlesExport: async () => {
+                let activeTitleBackupFile = getActiveTitleBackupFile(getAppConfig())
+                if (!activeTitleBackupFile) {
+                    const reservation = await reserveTitleBackupName({
+                        backupFolderPath: settings.backupFolderPath,
+                        date: new Date(),
+                        store: {
+                            getConfig: getAppConfig,
+                            setConfig: setAppConfig,
+                        },
+                    })
+
+                    if (!reservation.ok) {
+                        notifyEntityExportFailure(mainWindow, {
+                            kind: 'titleBackup',
+                            filePath: settings.backupFolderPath,
+                            error: new Error(reservation.error),
+                        })
+                        return
+                    }
+
+                    activeTitleBackupFile = reservation.filename
+                }
+
+                const backupContent = serializeTitleBackup(
+                    mapPlateauItemsToTitleBackupItems(parseCsv(content))
+                )
+                const backupResult = await writeTitleBackupWithRetention({
+                    backupFolderPath: settings.backupFolderPath,
+                    filename: activeTitleBackupFile,
+                    content: backupContent,
+                })
+
+                if (!backupResult.ok) {
+                    notifyEntityExportFailure(mainWindow, {
+                        kind: 'titleBackup',
+                        filePath: path.join(settings.backupFolderPath, activeTitleBackupFile),
+                        error: new Error(backupResult.error ?? 'TITLE_BACKUP_WRITE_FAILED'),
+                    })
+                }
+            },
         })
     } catch (error) {
         console.error('[entity-export] failed after csv:write:', error)

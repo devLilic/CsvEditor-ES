@@ -83,6 +83,50 @@ export interface CsvProjectDeleteResponse {
     error?: string
 }
 
+export interface TitleBackupFileInfo {
+    filename: string
+    fullPath: string
+    mtimeMs: number
+}
+
+export interface TitleBackupReserveRequest {
+    forceNewProject?: boolean
+}
+
+export interface TitleBackupReserveResponse {
+    ok: boolean
+    filename?: string
+    error?: string
+}
+
+export interface TitleBackupListResponse {
+    ok: boolean
+    files: TitleBackupFileInfo[]
+    error?: string
+}
+
+export interface TitleBackupReadRequest {
+    filename: string
+}
+
+export interface TitleBackupReadResponse {
+    ok: boolean
+    content?: string
+    error?: string
+}
+
+export interface TitleBackupWriteRequest {
+    filename: string
+    content: string
+}
+
+export interface TitleBackupWriteResponse {
+    ok: boolean
+    filename?: string
+    fullPath?: string
+    error?: string
+}
+
 export type ReadQuickTitlesCsvResult =
     | {
         ok: true
@@ -130,7 +174,7 @@ export type UpdateDownloadResult =
     | { ok: false; error: string }
 
 export interface EntityExportFailureNotification {
-    kind: 'titles' | 'persons' | 'locations' | 'phones' | 'waitTitlesLocations' | 'quickTitles'
+    kind: 'titles' | 'titleBackup' | 'persons' | 'locations' | 'phones' | 'waitTitlesLocations' | 'quickTitles'
     filePath: string
     message: string
 }
@@ -240,6 +284,26 @@ export interface IpcInvokeMap {
     [IPC_CHANNELS.CSV_PROJECT_DELETE]: {
         request: CsvProjectDeleteRequest
         response: CsvProjectDeleteResponse
+    }
+
+    [IPC_CHANNELS.TITLE_BACKUP_RESERVE]: {
+        request: TitleBackupReserveRequest
+        response: TitleBackupReserveResponse
+    }
+
+    [IPC_CHANNELS.TITLE_BACKUP_LIST]: {
+        request: void
+        response: TitleBackupListResponse
+    }
+
+    [IPC_CHANNELS.TITLE_BACKUP_READ]: {
+        request: TitleBackupReadRequest
+        response: TitleBackupReadResponse
+    }
+
+    [IPC_CHANNELS.TITLE_BACKUP_WRITE]: {
+        request: TitleBackupWriteRequest
+        response: TitleBackupWriteResponse
     }
 
     [IPC_CHANNELS.SETTINGS_GET_QUICK_TITLES]: {
@@ -406,6 +470,10 @@ export interface RendererApi {
     saveCsvProjectAs(request: IpcRequest<typeof IPC_CHANNELS.CSV_PROJECT_SAVE_AS>): Promise<IpcResponse<typeof IPC_CHANNELS.CSV_PROJECT_SAVE_AS>>
     loadCsvProjectIntoWorking(request: IpcRequest<typeof IPC_CHANNELS.CSV_PROJECT_LOAD_INTO_WORKING>): Promise<IpcResponse<typeof IPC_CHANNELS.CSV_PROJECT_LOAD_INTO_WORKING>>
     deleteCsvProject(request: IpcRequest<typeof IPC_CHANNELS.CSV_PROJECT_DELETE>): Promise<IpcResponse<typeof IPC_CHANNELS.CSV_PROJECT_DELETE>>
+    reserveTitleBackup(request: IpcRequest<typeof IPC_CHANNELS.TITLE_BACKUP_RESERVE>): Promise<IpcResponse<typeof IPC_CHANNELS.TITLE_BACKUP_RESERVE>>
+    listTitleBackups(): Promise<IpcResponse<typeof IPC_CHANNELS.TITLE_BACKUP_LIST>>
+    readTitleBackup(request: IpcRequest<typeof IPC_CHANNELS.TITLE_BACKUP_READ>): Promise<IpcResponse<typeof IPC_CHANNELS.TITLE_BACKUP_READ>>
+    writeTitleBackup(request: IpcRequest<typeof IPC_CHANNELS.TITLE_BACKUP_WRITE>): Promise<IpcResponse<typeof IPC_CHANNELS.TITLE_BACKUP_WRITE>>
 
     getQuickTitles(): Promise<IpcResponse<typeof IPC_CHANNELS.SETTINGS_GET_QUICK_TITLES>>
     setQuickTitles(list: IpcRequest<typeof IPC_CHANNELS.SETTINGS_SET_QUICK_TITLES>): Promise<IpcResponse<typeof IPC_CHANNELS.SETTINGS_SET_QUICK_TITLES>>

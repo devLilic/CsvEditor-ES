@@ -25,6 +25,7 @@ import { QuickTitlesBar } from './QuickTitlesBar'
 import { InputField } from './common/InputField'
 import { PhoneImageModal } from './phone-image/PhoneImageModal'
 import { PersonQuickTitleDialog } from './quick-titles/PersonQuickTitleDialog'
+import { showErrorToast } from './common/toast'
 
 type FormState = {
     title?: string
@@ -75,7 +76,6 @@ export function EntityEditor() {
     const [phoneImageSettings, setPhoneImageSettings] = useState<PhoneImageSettings>(FALLBACK_PHONE_IMAGE_SETTINGS)
     const [phoneImageError, setPhoneImageError] = useState<string | null>(null)
     const [phoneImageModalOpen, setPhoneImageModalOpen] = useState(false)
-    const [dividerError, setDividerError] = useState('')
     const [isAddingDivider, setIsAddingDivider] = useState(false)
     const [quickTitleDialog, setQuickTitleDialog] = useState({
         open: false,
@@ -255,7 +255,6 @@ export function EntityEditor() {
     const addTitleDivider = async () => {
         if (!canAddTitleDivider || isAddingDivider) return
 
-        setDividerError('')
         setIsAddingDivider(true)
 
         try {
@@ -268,7 +267,7 @@ export function EntityEditor() {
                 : await addPlateauTitleDivider()
 
             if (!result.ok) {
-                setDividerError(result.error ?? 'TITLE_DIVIDER_SAVE_FAILED')
+                showErrorToast(result.error ?? 'TITLE_DIVIDER_SAVE_FAILED')
             }
         } finally {
             setIsAddingDivider(false)
@@ -484,11 +483,6 @@ export function EntityEditor() {
                     )}
                 </div>
 
-                {dividerError && (
-                    <div role="alert" className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                        {dividerError}
-                    </div>
-                )}
             </div>
 
             {/* QuickTitles doar la TITLES */}

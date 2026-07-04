@@ -3,7 +3,7 @@ import { IPC_CHANNELS } from '../../src/shared/ipc-channels'
 import type { EntityExportError } from './entity-export-service'
 
 type ExportFailureNotificationInput = Omit<EntityExportError, 'kind'> & {
-    kind: EntityExportError['kind'] | 'quickTitles'
+    kind: EntityExportError['kind'] | 'quickTitles' | 'titleBackup'
 }
 
 export function notifyEntityExportFailure(mainWindow: BrowserWindow, error: ExportFailureNotificationInput): void {

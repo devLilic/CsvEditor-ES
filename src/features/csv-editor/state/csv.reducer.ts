@@ -309,6 +309,10 @@ function getPlateauTitleListItems(rows: SectionRow[]): PlateauTitleListItem[] {
     })
 }
 
+function hasConsecutivePlateauTitleDividers(items: PlateauTitleListItem[]): boolean {
+    return items.some((item, index) => item.type === 'divider' && items[index + 1]?.type === 'divider')
+}
+
 function renumberPlateauTitleRows(rows: SectionRow[]): SectionRow[] {
     const numbers = renumberPlateauTitles(getPlateauTitleListItems(rows))
 
@@ -324,10 +328,6 @@ function renumberPlateauTitleRows(rows: SectionRow[]): SectionRow[] {
             },
         }
     })
-}
-
-function hasConsecutivePlateauTitleDividers(items: PlateauTitleListItem[]): boolean {
-    return items.some((item, index) => item.type === 'divider' && items[index + 1]?.type === 'divider')
 }
 
 function updateInvitedTitleListSection(
@@ -567,10 +567,13 @@ export function csvReducer(state: CsvState, action: CsvAction): CsvState {
                 return state
             }
 
-            const nextRows = reorderPlateauTitleRows(section.rows, action.payload.items)
-            if (hasConsecutivePlateauTitleDividers(getPlateauTitleListItems(nextRows))) {
+            if (hasConsecutivePlateauTitleDividers(action.payload.items)) {
                 return state
             }
+
+            const nextRows = collapseConsecutivePlateauTitleDividers(
+                reorderPlateauTitleRows(section.rows, action.payload.items)
+            )
 
             return updateInvitedTitleListSection(
                 state,

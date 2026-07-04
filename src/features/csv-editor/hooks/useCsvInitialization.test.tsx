@@ -30,6 +30,7 @@ describe('useCsvInitialization', () => {
     })
 
     it('loads configured working CSV from settings when it can be read', async () => {
+        const api = (window as any).electronAPI
         vi.spyOn(csvFileSettingsService, 'getCsvFileSettings').mockResolvedValue({
             workingCsvPath: 'C:/work/current.csv',
             backupFolderPath: 'C:/work/backups',
@@ -60,6 +61,7 @@ describe('useCsvInitialization', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('LOADED LOCATION')
         expect(getWorkingSpy).toHaveBeenCalledOnce()
         expect(openDialogSpy).not.toHaveBeenCalled()
+        expect(api.reserveTitleBackup).toHaveBeenCalledWith({ forceNewProject: false })
     })
 
     it('loads the default project when no working CSV is configured', async () => {

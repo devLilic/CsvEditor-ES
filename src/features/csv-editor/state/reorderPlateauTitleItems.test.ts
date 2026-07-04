@@ -119,4 +119,25 @@ describe('reorderPlateauTitleItems divider rules', () => {
             'title-row-3',
         ])
     })
+
+    it('combines adjacent dividers after moving a title before the first divider', () => {
+        const state = stateWithInvited([
+            { id: 'title-row-1', title: { id: 'title-1', title: 'T1' } },
+            { id: 'divider-row-1', titleDivider: createTitleDivider('divider-1') },
+            { id: 'title-row-2', title: { id: 'title-2', title: 'T2' } },
+            { id: 'divider-row-2', titleDivider: createTitleDivider('divider-2') },
+        ])
+
+        const nextState = reorder(state, [
+            { type: 'title', rowId: 'title-row-1' },
+            { type: 'title', rowId: 'title-row-2' },
+            { type: 'divider', id: 'divider-1' },
+        ])
+
+        expect(nextState.entities.sections[0].rows.map((row) => row.title?.title ?? row.titleDivider?.id)).toEqual([
+            'T1',
+            'T2',
+            'divider-1',
+        ])
+    })
 })

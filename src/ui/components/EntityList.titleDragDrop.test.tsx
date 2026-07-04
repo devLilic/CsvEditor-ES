@@ -5,6 +5,7 @@ import { EntityList } from './EntityList'
 import { EditModeProvider, useEditMode } from '@/ui/context/EditModeContext'
 import { TitleFilterProvider } from '@/ui/context/TitleFilterContext'
 import { TITLE_DIVIDER_MARKER } from '@/features/csv-editor'
+import { reorderPlateauTitleItems } from '@/features/csv-editor/domain/reorderPlateauTitleItems'
 import { settingsService } from '@/features/csv-editor/services/settingsService'
 
 const dndHooks = vi.hoisted(() => ({
@@ -145,6 +146,25 @@ function mixedPlateauItems() {
     ]
 }
 
+function compactPlateauItems() {
+    return [
+        { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'T1' } },
+        { type: 'divider', id: 'divider-1' },
+        { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'T2' } },
+        { type: 'divider', id: 'divider-2' },
+    ]
+}
+
+function getMockPlateauItemId(item: any): string {
+    return item.type === 'divider' ? item.id : item.rowId
+}
+
+function toPlateauTitleListItem(item: any) {
+    return item.type === 'divider'
+        ? { type: 'divider' as const, id: item.id }
+        : { type: 'title' as const, rowId: item.rowId }
+}
+
 beforeEach(() => {
     dndHooks.onDragEnd = null
     dndHooks.sortableTransform = null
@@ -171,6 +191,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cleanup()
+    document.getElementById('app-error-toast')?.remove()
 })
 
 describe('EntityList title drag-and-drop', () => {
@@ -277,5 +298,52 @@ describe('EntityList title drag-and-drop', () => {
         })
 
         expect(csvHooks.reorderPlateauTitleItems).not.toHaveBeenCalled()
+    })
+
+    it('combines the two dividers left after moving T2 before D1', async () => {
+        let currentItems = compactPlateauItems()
+        csvHooks.getBlockItems.mockImplementation(() => currentItems)
+        csvHooks.reorderPlateauTitleItems.mockImplementation(async (activeId, overId) => {
+            const result = reorderPlateauTitleItems(
+                currentItems.map(toPlateauTitleListItem),
+                activeId,
+                overId
+            )
+
+            if (!result.ok) {
+                return { ok: false, error: result.reason }
+            }
+
+            const currentItemsById = new Map(
+                currentItems.map((item) => [getMockPlateauItemId(item), item])
+            )
+            currentItems = result.items.flatMap((item) => {
+                const itemId = item.type === 'title' ? item.rowId : item.id
+                const existingItem = currentItemsById.get(itemId)
+                return existingItem ? [existingItem] : []
+            })
+
+            return { ok: true }
+        })
+
+        const view = renderEntityList()
+        expect(await screen.findAllByRole('separator')).toHaveLength(2)
+
+        await act(async () => {
+            await dndHooks.onDragEnd?.({
+                active: { id: 'row-title-2' },
+                over: { id: 'divider-1' },
+            })
+        })
+
+        expect(csvHooks.reorderPlateauTitleItems).toHaveBeenCalledWith('row-title-2', 'divider-1')
+
+        view.unmount()
+        renderEntityList({ editMode: false })
+
+        expect(screen.getAllByRole('separator')).toHaveLength(1)
+        expect(screen.getByText('T1')).toBeInTheDocument()
+        expect(screen.getByText('T2')).toBeInTheDocument()
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
 })

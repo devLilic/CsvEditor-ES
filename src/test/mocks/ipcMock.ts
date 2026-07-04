@@ -14,6 +14,10 @@ export const ipcMock = {
     saveCsvProjectAs: vi.fn(),
     loadCsvProjectIntoWorking: vi.fn(),
     deleteCsvProject: vi.fn(),
+    reserveTitleBackup: vi.fn(),
+    listTitleBackups: vi.fn(),
+    readTitleBackup: vi.fn(),
+    writeTitleBackup: vi.fn(),
 
     // Settings
     getQuickTitles: vi.fn(),
