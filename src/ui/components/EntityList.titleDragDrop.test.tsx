@@ -9,6 +9,7 @@ import { settingsService } from '@/features/csv-editor/services/settingsService'
 
 const dndHooks = vi.hoisted(() => ({
     onDragEnd: null as null | ((event: any) => void),
+    sortableTransform: null as null | { x: number; y: number; scaleX: number; scaleY: number },
 }))
 
 vi.mock('@dnd-kit/core', async () => {
@@ -38,7 +39,7 @@ vi.mock('@dnd-kit/sortable', async () => {
             attributes: { 'data-sortable-id': id },
             listeners: { onPointerDown: vi.fn() },
             setNodeRef: vi.fn(),
-            transform: null,
+            transform: dndHooks.sortableTransform,
             transition: undefined,
             isDragging: false,
         }),
@@ -48,7 +49,7 @@ vi.mock('@dnd-kit/sortable', async () => {
 vi.mock('@dnd-kit/utilities', () => ({
     CSS: {
         Transform: {
-            toString: vi.fn(() => ''),
+            toString: vi.fn((transform) => transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : ''),
         },
     },
 }))
@@ -146,6 +147,7 @@ function mixedPlateauItems() {
 
 beforeEach(() => {
     dndHooks.onDragEnd = null
+    dndHooks.sortableTransform = null
     csvHooks.activeSectionId = 'invited-1'
     csvHooks.activeSection = { id: 'invited-1', kind: 'invited', rows: [] }
     csvHooks.activeEntityType = 'titles'
@@ -176,6 +178,26 @@ describe('EntityList title drag-and-drop', () => {
         renderEntityList()
 
         expect(await screen.findAllByRole('button', { name: 'Muta elementul' })).toHaveLength(4)
+    })
+
+    it('keeps sortable movement on the vertical axis', async () => {
+        dndHooks.sortableTransform = { x: 240, y: 18, scaleX: 1, scaleY: 1 }
+
+        renderEntityList()
+
+        const handle = (await screen.findAllByRole('button', { name: 'Muta elementul' }))[0]
+        const sortableRow = handle.closest('[style]')
+
+        expect(sortableRow?.getAttribute('style')).toContain('translate3d(0px, 18px, 0)')
+    })
+
+    it('renders the title drag handle before the title number', async () => {
+        renderEntityList()
+
+        const handle = (await screen.findAllByRole('button', { name: 'Muta elementul' }))[0]
+        const number = screen.getByText('1.')
+
+        expect(Boolean(handle.compareDocumentPosition(number) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
     })
 
     it('hides handles in normal mode', () => {

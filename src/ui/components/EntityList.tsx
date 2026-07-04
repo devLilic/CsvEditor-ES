@@ -68,12 +68,15 @@ function SortableRow({ id, children }: { id: string; children: (dragHandle: Reac
         transition,
         isDragging,
     } = useSortable({ id })
+    const verticalTransform = transform
+        ? { ...transform, x: 0 }
+        : transform
 
     return (
         <div
             ref={setNodeRef}
             style={{
-                transform: CSS.Transform.toString(transform),
+                transform: CSS.Transform.toString(verticalTransform),
                 transition,
             }}
             className={isDragging ? 'opacity-60' : undefined}
@@ -258,7 +261,8 @@ export function EntityList() {
                         }
                     `}
                 >
-                    <div className="flex min-w-0 gap-2 overflow-hidden">
+                    <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                        {dragHandle}
                         <div className="min-w-0 overflow-hidden">
                             {showNr && displayNr !== null ? (
                                 <div className="flex min-w-0 gap-2">
@@ -287,7 +291,6 @@ export function EntityList() {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
-                        {dragHandle}
                         {editMode && (
                             <button
                                 title="Sterge"
