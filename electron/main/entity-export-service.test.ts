@@ -17,6 +17,7 @@ const baseInput: ExportSingleEntityCsvInput = {
     kind: 'titles',
     paths: {
         titlesPath: 'D:\\TV\\OC\\Export\\PA_titles.csv',
+        titlesWithHotPath: 'D:\\TV\\OC\\Export\\PA_titles_with_hot.csv',
         personsPath: 'D:\\TV\\OC\\Export\\PA_persons.csv',
         locationsPath: 'D:\\TV\\OC\\Export\\PA_locations.csv',
         phonesPath: 'D:\\TV\\OC\\Export\\PA_phones.csv',
@@ -24,6 +25,7 @@ const baseInput: ExportSingleEntityCsvInput = {
     },
     csvs: {
         titlesCsv: 'Nr;Titlu\n3;Titlu test',
+        titlesWithHotCsv: 'Nr;Titlu;Ultima Ora\n3;Titlu test;',
         personsCsv: 'Nume;Functie',
         locationsCsv: 'Locatie',
         phonesCsv: 'Nume;Functie;Image',
@@ -141,9 +143,14 @@ describe('entity-export-service retry write logic', () => {
             },
         })).resolves.toEqual({ ok: true })
 
-        expect(fsp.writeFile).toHaveBeenCalledTimes(5)
+        expect(fsp.writeFile).toHaveBeenCalledTimes(6)
         expect(fsp.writeFile).toHaveBeenCalledWith(
             'D:\\TV\\OC\\Export\\PA_titles.csv',
+            'Nr;Titlu\n--- INVITATI ---;\n1;Titlu proiect',
+            expect.any(Object)
+        )
+        expect(fsp.writeFile).toHaveBeenCalledWith(
+            'D:\\TV\\OC\\Export\\PA_titles_with_hot.csv',
             'Nr;Titlu;Ultima Ora\n--- INVITATI ---;;\n1;Titlu proiect;',
             expect.any(Object)
         )

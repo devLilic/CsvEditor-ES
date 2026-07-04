@@ -473,7 +473,7 @@ export function EntityEditor() {
                     {canAddTitleDivider && (
                         <button
                             type="button"
-                            aria-label="Adauga separator vizual"
+                            aria-label="Separator vizual"
                             title="Adauga separator vizual"
                             onClick={addTitleDivider}
                             disabled={isAddingDivider}

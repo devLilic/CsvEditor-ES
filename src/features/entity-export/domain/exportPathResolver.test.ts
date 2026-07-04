@@ -13,6 +13,7 @@ describe('exportPathResolver', () => {
             exportFolderPath: 'D:\\TV\\OC\\Exports',
         })).toEqual({
             titlesPath: 'D:\\TV\\OC\\Exports\\PA_titles.csv',
+            titlesWithHotPath: 'D:\\TV\\OC\\Exports\\PA_titles_with_hot.csv',
             personsPath: 'D:\\TV\\OC\\Exports\\PA_persons.csv',
             locationsPath: 'D:\\TV\\OC\\Exports\\PA_locations.csv',
             phonesPath: 'D:\\TV\\OC\\Exports\\PA_phones.csv',
@@ -26,6 +27,7 @@ describe('exportPathResolver', () => {
             exportFolderPath: '',
         })).toEqual({
             titlesPath: 'D:\\TV\\OC\\Export\\PA_titles.csv',
+            titlesWithHotPath: 'D:\\TV\\OC\\Export\\PA_titles_with_hot.csv',
             personsPath: 'D:\\TV\\OC\\Export\\PA_persons.csv',
             locationsPath: 'D:\\TV\\OC\\Export\\PA_locations.csv',
             phonesPath: 'D:\\TV\\OC\\Export\\PA_phones.csv',
@@ -36,6 +38,7 @@ describe('exportPathResolver', () => {
     it('uses fixed filenames', () => {
         expect(ENTITY_EXPORT_FILENAMES).toEqual({
             titles: 'PA_titles.csv',
+            titlesWithHot: 'PA_titles_with_hot.csv',
             persons: 'PA_persons.csv',
             locations: 'PA_locations.csv',
             phones: 'PA_phones.csv',

@@ -1,5 +1,5 @@
 // src/ui/components/EntityList.tsx
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react'
 import {
     DndContext,
     KeyboardSensor,
@@ -33,7 +33,7 @@ import { useTitleFilter } from '@/ui/context/TitleFilterContext'
 const CONSECUTIVE_TITLE_DIVIDERS_DROP_ERROR = 'Nu pot exista două separatoare consecutive.'
 
 function getPlateauItemId(item: any): string {
-    return item.type === 'divider' ? item.id : item.rowId
+    return item.type === 'divider' ? item.id : item.rowId ?? item.id
 }
 
 function getPlateauTitleListItems(items: any[]): PlateauTitleListItem[] {
@@ -315,7 +315,7 @@ export function EntityList() {
 
         const itemId = getPlateauItemId(item)
         if (!canDragPlateauTitles || dragHandle) {
-            return <div key={itemId}>{renderedItem}</div>
+            return <Fragment key={itemId}>{renderedItem}</Fragment>
         }
 
         return (

@@ -164,6 +164,11 @@ describe('entity export mapper', () => {
 
         expect(result).toEqual({
             titlesCsv: [
+                'Nr;Titlu',
+                '--- INVITATI ---;',
+                '1;Titlu din state',
+            ].join('\n'),
+            titlesWithHotCsv: [
                 'Nr;Titlu;Ultima Ora',
                 '--- INVITATI ---;;',
                 '1;Titlu din state;',
@@ -194,6 +199,12 @@ describe('entity export mapper', () => {
 
         expect(result).toEqual({
             titlesCsv: [
+                'Nr;Titlu',
+                '--- INVITATI ---;',
+                '1;Titlu CSV',
+                '2;Alt titlu',
+            ].join('\n'),
+            titlesWithHotCsv: [
                 'Nr;Titlu;Ultima Ora',
                 '--- INVITATI ---;;',
                 '1;Titlu CSV;',
@@ -224,6 +235,11 @@ describe('entity export mapper', () => {
 
         expect(result).toEqual({
             titlesCsv: [
+                'Nr;Titlu',
+                '--- INVITATI ---;',
+                '1;Titlu implicit',
+            ].join('\n'),
+            titlesWithHotCsv: [
                 'Nr;Titlu;Ultima Ora',
                 '--- INVITATI ---;;',
                 '1;Titlu implicit;',
@@ -261,6 +277,13 @@ describe('entity export mapper', () => {
         ].join('\n'))
 
         expect(result.titlesCsv).toBe([
+            'Nr;Titlu',
+            '--- beta 1 - Extern ---;',
+            '1;Titlu beta',
+            '--- INVITATI ---;',
+            '1;Titlu platou',
+        ].join('\n'))
+        expect(result.titlesWithHotCsv).toBe([
             'Nr;Titlu;Ultima Ora',
             '--- beta 1 - Extern ---;;',
             '1;Titlu beta;',

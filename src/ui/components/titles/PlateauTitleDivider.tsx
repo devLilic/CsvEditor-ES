@@ -21,7 +21,7 @@ export function PlateauTitleDivider({
             data-testid="plateau-title-divider"
         >
             {dragHandle && (
-                <div className="ml-[5px] shrink-0">
+                <div className="ml-[4px] shrink-0">
                     {dragHandle}
                 </div>
             )}

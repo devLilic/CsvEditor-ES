@@ -70,17 +70,16 @@ function paState(): EntitiesState {
 }
 
 describe('PA entity export mapper', () => {
-    it('writes PA_titles.csv with section markers, per-section numbers, and independent hot titles', () => {
+    it('writes PA_titles.csv with section markers and per-section numbers', () => {
         expect(mapPaTitlesExport(paState())).toBe([
-            'Nr;Titlu;Ultima Ora',
-            '--- beta 1 - Externe ---;;',
-            '1;T1;',
-            '2;T2;',
-            '--- beta 2 - Consiliu ---;;',
-            '1;T3;',
-            '--- INVITATI ---;;',
-            '1;T4;H1',
-            ';;H2',
+            'Nr;Titlu',
+            '--- beta 1 - Externe ---;',
+            '1;T1',
+            '2;T2',
+            '--- beta 2 - Consiliu ---;',
+            '1;T3',
+            '--- INVITATI ---;',
+            '1;T4',
         ].join('\n'))
     })
 

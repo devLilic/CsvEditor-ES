@@ -367,17 +367,15 @@ describe('EntityList', () => {
         expect(csvHooks.deleteEntity).toHaveBeenCalledWith('section-pa', 'waitTitles', 'wait-title-1')
     })
 
-    it('keeps ON AIR actions working for PA entity types', async () => {
-        const user = userEvent.setup()
+    it('hides ON AIR actions for PA entity items', () => {
         csvHooks.activeEntityType = 'hotTitles'
         csvHooks.getBlockItems.mockReturnValue([
             { entityType: 'hotTitles', id: 'hot-1', data: { title: 'HOT' } },
         ])
 
         renderEntityList()
-        await user.click(screen.getByRole('button', { name: 'ON AIR' }))
 
-        expect(csvHooks.isOnAir).toHaveBeenCalledWith('hotTitles', 'hot-1')
-        expect(csvHooks.setOnAir).toHaveBeenCalledWith('hotTitles', 'hot-1')
+        expect(screen.queryByRole('button', { name: 'ON AIR' })).not.toBeInTheDocument()
+        expect(csvHooks.setOnAir).not.toHaveBeenCalled()
     })
 })

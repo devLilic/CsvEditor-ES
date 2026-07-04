@@ -133,13 +133,13 @@ describe('EntityEditor add divider button', () => {
     it('appears in PLATOU Titles', () => {
         renderEntityEditor()
 
-        expect(screen.getByRole('button', { name: 'Adauga separator vizual' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Separator vizual' })).toBeInTheDocument()
     })
 
     it('appears in PLATOU Titles when Edit Mode is OFF', () => {
         renderEntityEditor()
 
-        expect(screen.getByRole('button', { name: 'Adauga separator vizual' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Separator vizual' })).toBeInTheDocument()
     })
 
     it('appears in PLATOU Titles when Edit Mode is ON', async () => {
@@ -148,7 +148,7 @@ describe('EntityEditor add divider button', () => {
 
         await user.click(screen.getByRole('button', { name: 'toggle edit mode' }))
 
-        expect(screen.getByRole('button', { name: 'Adauga separator vizual' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Separator vizual' })).toBeInTheDocument()
     })
 
     it('does not appear in BETA', () => {
@@ -157,7 +157,7 @@ describe('EntityEditor add divider button', () => {
 
         renderEntityEditor()
 
-        expect(screen.queryByRole('button', { name: 'Adauga separator vizual' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Separator vizual' })).not.toBeInTheDocument()
     })
 
     it('does not appear for Persons', () => {
@@ -165,20 +165,20 @@ describe('EntityEditor add divider button', () => {
 
         renderEntityEditor()
 
-        expect(screen.queryByRole('button', { name: 'Adauga separator vizual' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Separator vizual' })).not.toBeInTheDocument()
     })
 
     it('does not depend on any drag-and-drop setting', () => {
         renderEntityEditor()
 
-        expect(screen.getByRole('button', { name: 'Adauga separator vizual' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Separator vizual' })).toBeInTheDocument()
     })
 
     it('click without selection adds the divider at the end', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
 
-        await user.click(screen.getByRole('button', { name: 'Adauga separator vizual' }))
+        await user.click(screen.getByRole('button', { name: 'Separator vizual' }))
 
         expect(csvHooks.addPlateauTitleDivider).toHaveBeenCalledWith()
     })
@@ -191,7 +191,7 @@ describe('EntityEditor add divider button', () => {
         ])
 
         renderEntityEditor()
-        await user.click(screen.getByRole('button', { name: 'Adauga separator vizual' }))
+        await user.click(screen.getByRole('button', { name: 'Separator vizual' }))
 
         expect(csvHooks.addPlateauTitleDivider).toHaveBeenCalledWith({ afterItemId: 'row-title-1' })
     })
@@ -201,7 +201,7 @@ describe('EntityEditor add divider button', () => {
         renderEntityEditor()
 
         await user.type(screen.getByLabelText('Titlu'), 'Breaking News')
-        await user.click(screen.getByRole('button', { name: 'Adauga separator vizual' }))
+        await user.click(screen.getByRole('button', { name: 'Separator vizual' }))
 
         expect(screen.getByLabelText('Titlu')).toHaveValue('Breaking News')
         expect(csvHooks.addEntity).not.toHaveBeenCalled()
@@ -213,7 +213,7 @@ describe('EntityEditor add divider button', () => {
         csvHooks.addPlateauTitleDivider.mockResolvedValueOnce({ ok: false, error: 'WRITE_FAILED' })
 
         renderEntityEditor()
-        await user.click(screen.getByRole('button', { name: 'Adauga separator vizual' }))
+        await user.click(screen.getByRole('button', { name: 'Separator vizual' }))
 
         expect(await screen.findByRole('alert')).toHaveTextContent('WRITE_FAILED')
     })
@@ -224,7 +224,7 @@ describe('EntityEditor add divider button', () => {
 
         renderEntityEditor()
         await user.type(screen.getByLabelText('Titlu'), 'Existing draft')
-        await user.click(screen.getByRole('button', { name: 'Adauga separator vizual' }))
+        await user.click(screen.getByRole('button', { name: 'Separator vizual' }))
 
         expect(await screen.findByRole('alert')).toHaveTextContent('WRITE_FAILED')
         expect(csvHooks.addEntity).not.toHaveBeenCalled()
