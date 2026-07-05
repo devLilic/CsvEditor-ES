@@ -5,6 +5,10 @@ import {
     getPlateauTitleDragDropSetting,
 } from '@/features/settings/plateauTitleDragDropSetting'
 import {
+    createConfigWithPlateauTitleDividerCreationSetting,
+    getPlateauTitleDividerCreationSetting,
+} from '@/features/settings/plateauTitleDividerCreationSetting'
+import {
     getUiThemeSetting,
     persistUiThemeSetting,
     restoreUiThemeSetting,
@@ -101,6 +105,11 @@ export const settingsService = {
         return getPlateauTitleDragDropSetting(config)
     },
 
+    async getPlateauTitleDividerCreationEnabled(): Promise<boolean> {
+        const config = await this.getConfig()
+        return getPlateauTitleDividerCreationSetting(config)
+    },
+
     async setPlateauTitleDragDropEnabled(enabled: boolean): Promise<boolean> {
         const currentConfig = await this.getConfig()
         const savedConfig = await this.setConfig(
@@ -108,6 +117,15 @@ export const settingsService = {
         )
 
         return getPlateauTitleDragDropSetting(savedConfig)
+    },
+
+    async setPlateauTitleDividerCreationEnabled(enabled: boolean): Promise<boolean> {
+        const currentConfig = await this.getConfig()
+        const savedConfig = await this.setConfig(
+            createConfigWithPlateauTitleDividerCreationSetting(currentConfig, enabled)
+        )
+
+        return getPlateauTitleDividerCreationSetting(savedConfig)
     },
 
     async getUiTheme(): Promise<UiTheme> {

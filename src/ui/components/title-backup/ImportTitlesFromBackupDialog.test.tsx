@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { TitleBackupImportReadResult } from '@/features/title-backup/services/titleBackupImportService'
@@ -6,6 +6,7 @@ import { ImportTitlesFromBackupDialog } from './ImportTitlesFromBackupDialog'
 
 function createService(input?: {
     files?: string[]
+    activeFile?: string | null
     reads?: Record<string, TitleBackupImportReadResult>
 }) {
     const files = input?.files ?? ['03_07_2026_titluri.csv']
@@ -24,7 +25,7 @@ function createService(input?: {
     }
 
     return {
-        listBackups: vi.fn(async () => ({ ok: true, files })),
+        listBackups: vi.fn(async () => ({ ok: true, files, activeFile: input?.activeFile ?? null })),
         readBackup: vi.fn(async (filename: string) => reads[filename]),
     }
 }
@@ -47,7 +48,14 @@ async function renderDialog(options?: {
         />
     )
 
-    await screen.findByText('03_07_2026_titluri.csv')
+    await waitFor(() => {
+        expect(service.listBackups).toHaveBeenCalled()
+    })
+    if ((await service.listBackups.mock.results[0].value).files.length > 0) {
+        await waitFor(() => {
+            expect(service.readBackup).toHaveBeenCalled()
+        })
+    }
 
     return { service, onImport, onClose }
 }
@@ -69,6 +77,32 @@ describe('ImportTitlesFromBackupDialog', () => {
 
         expect(screen.getByText('03_07_2026_titluri.csv')).toBeInTheDocument()
         expect(screen.getByText('03_07_2026_titluri_2.csv')).toBeInTheDocument()
+    })
+
+    it('shows the current active title file as an indicator, not an import option', async () => {
+        await renderDialog({
+            service: createService({
+                activeFile: '05_07_2026_titluri_2.csv',
+                files: [
+                    '05_07_2026_titluri.csv',
+                    '04_07_2026_titluri.csv',
+                ],
+                reads: {
+                    '05_07_2026_titluri.csv': {
+                        ok: true,
+                        filename: '05_07_2026_titluri.csv',
+                        valid: true,
+                        errors: [],
+                        items: [{ type: 'title', title: 'Titlu vechi' }],
+                    },
+                },
+            }),
+        })
+
+        expect(screen.getByText(/Fisier curent:/)).toBeInTheDocument()
+        expect(screen.getByText('05_07_2026_titluri_2.csv')).toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: '05_07_2026_titluri_2.csv' })).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '05_07_2026_titluri.csv' })).toBeInTheDocument()
     })
 
     it('shows titles', async () => {

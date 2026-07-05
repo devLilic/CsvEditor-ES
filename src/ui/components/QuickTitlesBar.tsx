@@ -57,7 +57,7 @@ export function QuickTitlesBar({
                         <button
                             aria-pressed={isActive}
                             onClick={() => {
-                                onApplyPrefix(qt)
+                                onApplyPrefix(qt.toUpperCase())
                                 focusEditor()
                             }}
                             className={`app-button app-button-primary app-quick-title-button min-w-0 max-w-56 px-3 py-2 rounded text-sm text-white ${

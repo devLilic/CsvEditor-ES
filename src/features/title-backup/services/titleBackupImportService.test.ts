@@ -17,6 +17,7 @@ describe('titleBackupImportService', () => {
     let contents: Record<string, string>
     let listBackupFiles: ReturnType<typeof vi.fn>
     let readBackupFile: ReturnType<typeof vi.fn>
+    let activeFile: string | null
 
     function createService() {
         listBackupFiles = vi.fn(async (backupFolderPath: string) => {
@@ -30,6 +31,7 @@ describe('titleBackupImportService', () => {
 
         return createTitleBackupImportService({
             getCsvFileSettings: async () => csvFileSettings,
+            getActiveTitleBackupFile: async () => activeFile,
             listBackupFiles,
             readBackupFile,
         })
@@ -38,6 +40,7 @@ describe('titleBackupImportService', () => {
     beforeEach(() => {
         files = []
         contents = {}
+        activeFile = null
         listBackupFiles = vi.fn()
         readBackupFile = vi.fn()
     })
@@ -53,6 +56,7 @@ describe('titleBackupImportService', () => {
 
         await expect(createService().listBackups()).resolves.toEqual({
             ok: true,
+            activeFile: null,
             files: [
                 '03_07_2026_titluri_10.csv',
                 '03_07_2026_titluri_2.csv',
@@ -70,6 +74,7 @@ describe('titleBackupImportService', () => {
 
         await expect(createService().listBackups()).resolves.toEqual({
             ok: true,
+            activeFile: null,
             files: ['03_07_2026_titluri.csv'],
         })
     })
@@ -83,8 +88,27 @@ describe('titleBackupImportService', () => {
 
         await expect(createService().listBackups()).resolves.toEqual({
             ok: true,
+            activeFile: null,
             files: [
                 '03_07_2026_titluri_2.csv',
+                '03_07_2026_titluri_3.csv',
+                '03_07_2026_titluri.csv',
+            ],
+        })
+    })
+
+    it('excludes the active current title backup file from archive imports', async () => {
+        activeFile = '03_07_2026_titluri_2.csv'
+        files = [
+            { filename: '03_07_2026_titluri.csv', mtimeMs: 10 },
+            { filename: '03_07_2026_titluri_2.csv', mtimeMs: 30 },
+            { filename: '03_07_2026_titluri_3.csv', mtimeMs: 20 },
+        ]
+
+        await expect(createService().listBackups()).resolves.toEqual({
+            ok: true,
+            activeFile: '03_07_2026_titluri_2.csv',
+            files: [
                 '03_07_2026_titluri_3.csv',
                 '03_07_2026_titluri.csv',
             ],
@@ -142,6 +166,7 @@ describe('titleBackupImportService', () => {
 
         await expect(createService().listBackups()).resolves.toEqual({
             ok: true,
+            activeFile: null,
             files: [
                 '03_07_2026_titluri_2.csv',
                 '03_07_2026_titluri.csv',

@@ -6,7 +6,7 @@ import {
 } from '@/features/title-backup/services/titleBackupImportService'
 
 type ImportTitlesFromBackupService = {
-    listBackups(): Promise<{ ok: boolean; files: string[]; error?: string }>
+    listBackups(): Promise<{ ok: boolean; files: string[]; activeFile?: string | null; error?: string }>
     readBackup(filename: string): Promise<TitleBackupImportReadResult>
 }
 
@@ -28,6 +28,7 @@ export function ImportTitlesFromBackupDialog({
     service = titleBackupImportService,
 }: ImportTitlesFromBackupDialogProps) {
     const [files, setFiles] = useState<string[]>([])
+    const [activeFile, setActiveFile] = useState<string | null>(null)
     const [selectedFile, setSelectedFile] = useState<string>('')
     const [backupResult, setBackupResult] = useState<TitleBackupImportReadResult | null>(null)
     const [selectedTitleKeys, setSelectedTitleKeys] = useState<Set<string>>(() => new Set())
@@ -39,6 +40,7 @@ export function ImportTitlesFromBackupDialog({
         let isMounted = true
 
         setFiles([])
+        setActiveFile(null)
         setSelectedFile('')
         setBackupResult(null)
         setSelectedTitleKeys(new Set())
@@ -48,6 +50,7 @@ export function ImportTitlesFromBackupDialog({
             if (!isMounted) return
 
             setFiles(result.files)
+            setActiveFile(result.activeFile ?? null)
             if (!result.ok) {
                 setStatus(result.error ?? 'Backupurile nu au putut fi incarcate.')
                 return
@@ -169,6 +172,11 @@ export function ImportTitlesFromBackupDialog({
 
                 <div className="app-modal-body mt-5 grid min-h-0 flex-1 grid-cols-[minmax(180px,260px)_1fr] gap-4">
                     <div className="app-panel min-h-0 overflow-y-auto rounded border border-gray-200">
+                        {activeFile && (
+                            <div className="border-b border-gray-200 px-3 py-2 text-xs text-gray-600">
+                                Fisier curent: <span className="font-semibold text-gray-800">{activeFile}</span>
+                            </div>
+                        )}
                         {files.length === 0 ? (
                             <p className="px-3 py-2 text-sm text-gray-600">Nu exista backupuri de titluri.</p>
                         ) : (

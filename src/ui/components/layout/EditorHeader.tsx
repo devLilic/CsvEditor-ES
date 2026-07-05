@@ -152,9 +152,6 @@ export function EditorHeader() {
     return (
         <div className="app-header relative flex items-center justify-between gap-4 border-b bg-white px-4 py-2">
             <div className="app-header-primary flex min-w-0 items-center gap-3">
-                <div className="app-brand-title shrink-0 text-sm font-semibold">
-                    Punctul pe Azi
-                </div>
                 <SectionsTabs />
             </div>
 

@@ -1,5 +1,5 @@
 // src/ui/components/EntityList.tsx
-import { Fragment, type ButtonHTMLAttributes, type DOMAttributes, type ReactNode, useEffect, useMemo, useState } from 'react'
+import { Fragment, type ButtonHTMLAttributes, type DOMAttributes, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import {
     DndContext,
     KeyboardSensor,
@@ -107,6 +107,16 @@ export function EntityList() {
     const { titleFilter } = useTitleFilter()
     const [deletingDividerId, setDeletingDividerId] = useState<string | null>(null)
     const [enablePlateauTitleDragDrop, setEnablePlateauTitleDragDrop] = useState<boolean | null>(null)
+    const [recentlyChangedTitleId, setRecentlyChangedTitleId] = useState<string | null>(null)
+    const listRef = useRef<HTMLDivElement>(null)
+    const previousListStateRef = useRef<{
+        contextKey: string
+        itemCount: number
+    } | null>(null)
+    const previousTitleValuesRef = useRef<{
+        contextKey: string
+        titleById: Map<string, string>
+    } | null>(null)
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -153,6 +163,71 @@ export function EntityList() {
                 .includes(normalizedTitleFilter)
         )
     }, [items, normalizedTitleFilter, supportedEntityType])
+
+    useEffect(() => {
+        const contextKey = `${sectionId}:${supportedEntityType ?? ''}:${normalizedTitleFilter}`
+        const previousListState = previousListStateRef.current
+        const lastItem = items[items.length - 1] as any
+        const shouldScrollToNewTitle =
+            previousListState?.contextKey === contextKey &&
+            supportedEntityType === 'titles' &&
+            !normalizedTitleFilter &&
+            items.length > previousListState.itemCount &&
+            lastItem?.type !== 'divider' &&
+            lastItem?.entityType === 'titles'
+
+        previousListStateRef.current = {
+            contextKey,
+            itemCount: items.length,
+        }
+
+        if (!shouldScrollToNewTitle) return
+
+        requestAnimationFrame(() => {
+            const list = listRef.current
+            if (!list) return
+
+            list.scrollTop = list.scrollHeight
+        })
+    }, [items, normalizedTitleFilter, sectionId, supportedEntityType])
+
+    useEffect(() => {
+        const contextKey = `${sectionId}:${supportedEntityType ?? ''}`
+        const titleById = new Map<string, string>()
+
+        for (const item of items as any[]) {
+            if (item.type === 'divider' || item.entityType !== 'titles') continue
+            titleById.set(item.id, item.data?.title ?? '')
+        }
+
+        const previousTitleValues = previousTitleValuesRef.current
+        let changedTitleId: string | null = null
+
+        if (previousTitleValues?.contextKey === contextKey) {
+            for (const [id, title] of titleById) {
+                const previousTitle = previousTitleValues.titleById.get(id)
+                if (previousTitle === undefined || previousTitle !== title) {
+                    changedTitleId = id
+                    break
+                }
+            }
+        }
+
+        previousTitleValuesRef.current = {
+            contextKey,
+            titleById,
+        }
+
+        if (!changedTitleId || supportedEntityType !== 'titles') return
+
+        setRecentlyChangedTitleId(changedTitleId)
+        const timeoutId = window.setTimeout(() => {
+            setRecentlyChangedTitleId((currentId) => currentId === changedTitleId ? null : currentId)
+        }, 900)
+
+        return () => window.clearTimeout(timeoutId)
+    }, [items, sectionId, supportedEntityType])
+
     const duplicatePlateauTitleIds = useMemo(() => {
         if (activeSection?.kind !== 'invited' || supportedEntityType !== 'titles') {
             return new Set<string>()
@@ -255,6 +330,7 @@ export function EntityList() {
             const isTitle = item.entityType === 'titles'
             const isPersons = item.entityType === 'persons'
             const isDuplicatePlateauTitle = isTitle && duplicatePlateauTitleIds.has(item.id)
+            const isRecentlyChangedTitle = isTitle && recentlyChangedTitleId === item.id
             const displayNr = isTitle ? titleNumberById.get(item.id) ?? null : null
             const mainText = isPersons
                 ? item.data?.name ?? ''
@@ -279,6 +355,7 @@ export function EntityList() {
                                     ? 'bg-[var(--duplicate-title-bg)] hover:bg-[var(--duplicate-title-bg)] border-l-[var(--duplicate-title-border)] text-[var(--duplicate-title-text)]'
                                 : 'hover:bg-gray-100 border-l-transparent'
                         }
+                        ${isRecentlyChangedTitle ? 'app-list-row-blink' : ''}
                     `}
                 >
                     <div className="flex min-w-0 items-center gap-2 overflow-hidden">
@@ -346,7 +423,7 @@ export function EntityList() {
     }
 
     return (
-        <div className="app-list h-full min-h-0 overflow-y-auto">
+        <div ref={listRef} className="app-list h-full min-h-0 overflow-y-auto">
             {canDragPlateauTitles ? (
                 <DndContext
                     sensors={sensors}

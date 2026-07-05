@@ -1,6 +1,7 @@
 import type { CsvFileSettings } from '@/features/csv-editor/domain/csvFileSettings'
 import { csvFileSettingsService } from '@/features/csv-editor/services/csvFileSettingsService'
 import type { RendererApi } from '@/shared/ipc-types'
+import { activeTitleBackupService } from './activeTitleBackupService'
 import { isValidActiveTitleBackupFile } from '../domain/activeTitleBackupFile'
 import {
     parseTitleBackup,
@@ -16,10 +17,12 @@ export type TitleBackupImportListResult =
     | {
         ok: true
         files: string[]
+        activeFile: string | null
     }
     | {
         ok: false
         files: string[]
+        activeFile: string | null
         error: string
     }
 
@@ -33,6 +36,7 @@ export type TitleBackupImportReadResult = {
 
 export type TitleBackupImportServiceDeps = {
     getCsvFileSettings(): Promise<CsvFileSettings>
+    getActiveTitleBackupFile(): Promise<string | null>
     listBackupFiles(backupFolderPath: string): Promise<TitleBackupImportFile[]>
     readBackupFile(backupFolderPath: string, filename: string): Promise<string>
 }
@@ -56,12 +60,15 @@ export function createTitleBackupImportService(deps: TitleBackupImportServiceDep
         async listBackups(): Promise<TitleBackupImportListResult> {
             try {
                 const backupFolderPath = await getBackupFolderPath()
+                const activeFile = await deps.getActiveTitleBackupFile()
                 const files = await deps.listBackupFiles(backupFolderPath)
 
                 return {
                     ok: true,
+                    activeFile,
                     files: files
                         .filter((file) => isValidActiveTitleBackupFile(file.filename))
+                        .filter((file) => file.filename !== activeFile)
                         .sort((a, b) => b.mtimeMs - a.mtimeMs)
                         .map((file) => file.filename),
                 }
@@ -69,6 +76,7 @@ export function createTitleBackupImportService(deps: TitleBackupImportServiceDep
                 return {
                     ok: false,
                     files: [],
+                    activeFile: null,
                     error: error instanceof Error ? error.message : 'TITLE_BACKUP_LIST_FAILED',
                 }
             }
@@ -112,6 +120,7 @@ export function createTitleBackupImportService(deps: TitleBackupImportServiceDep
 
 export const titleBackupImportService = createTitleBackupImportService({
     getCsvFileSettings: () => csvFileSettingsService.getCsvFileSettings(),
+    getActiveTitleBackupFile: () => activeTitleBackupService.getActiveTitleBackupFile(),
     listBackupFiles: async () => {
         const response = await getApi().listTitleBackups()
         if (!response.ok) {

@@ -35,6 +35,8 @@ export function DefaultProjectSettingsPage() {
     const [csvFileStatus, setCsvFileStatus] = useState<SaveStatus>('idle')
     const [uiTheme, setUiTheme] = useState<UiTheme>('legacy')
     const [uiThemeStatus, setUiThemeStatus] = useState<SaveStatus>('idle')
+    const [dividerCreationEnabled, setDividerCreationEnabled] = useState(true)
+    const [dividerCreationStatus, setDividerCreationStatus] = useState<SaveStatus>('idle')
 
     useEffect(() => {
         let isMounted = true
@@ -60,6 +62,12 @@ export function DefaultProjectSettingsPage() {
         settingsService.restoreUiTheme().then((storedTheme) => {
             if (isMounted) {
                 setUiTheme(storedTheme)
+            }
+        })
+
+        settingsService.getPlateauTitleDividerCreationEnabled().then((enabled) => {
+            if (isMounted) {
+                setDividerCreationEnabled(enabled)
             }
         })
 
@@ -224,6 +232,20 @@ export function DefaultProjectSettingsPage() {
         }
     }
 
+    const handleDividerCreationChange = async (enabled: boolean) => {
+        setDividerCreationEnabled(enabled)
+        setDividerCreationStatus('saving')
+
+        try {
+            const savedValue = await settingsService.setPlateauTitleDividerCreationEnabled(enabled)
+            setDividerCreationEnabled(savedValue)
+            setDividerCreationStatus('saved')
+        } catch {
+            setDividerCreationEnabled(true)
+            setDividerCreationStatus('error')
+        }
+    }
+
     const resolvedExportCsvFolder = csvFileSettings.workingCsvPath
         ? resolveEntityExportFolder({
             workingCsvPath: csvFileSettings.workingCsvPath,
@@ -302,6 +324,23 @@ export function DefaultProjectSettingsPage() {
                             <span className="text-sm text-red-700">Setarea nu a putut fi salvată.</span>
                         )}
                     </div>
+
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input
+                            type="checkbox"
+                            checked={dividerCreationEnabled}
+                            onChange={(event) => handleDividerCreationChange(event.target.checked)}
+                        />
+                        Use Divider
+                    </label>
+
+                    {dividerCreationStatus === 'saved' && (
+                        <span className="text-sm text-green-700">Salvat.</span>
+                    )}
+
+                    {dividerCreationStatus === 'error' && (
+                        <span className="text-sm text-red-700">Setarea Divider nu a putut fi salvata.</span>
+                    )}
                 </section>
 
                 <form onSubmit={handleSubmit} className="app-panel app-settings-section app-settings-general flex flex-col gap-5 rounded bg-white p-5 shadow-sm">

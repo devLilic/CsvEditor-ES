@@ -13,6 +13,7 @@ import {
     useQuickTitles,
 } from '@/features/csv-editor'
 import { phoneImageSettingsService } from '@/features/csv-editor/services/phoneImageSettingsService'
+import { settingsService } from '@/features/csv-editor/services/settingsService'
 import { applyQuickTitle as applyQuickTitleToEditor } from '@/features/quick-titles/domain/applyQuickTitle'
 import { buildPersonQuickTitleSuggestion } from '@/features/quick-titles/domain/personQuickTitleSuggestion'
 import { normalizeAndDeduplicateQuickTitles } from '@/features/quick-titles/domain/quickTitle'
@@ -60,23 +61,27 @@ function ArchiveImportIcon() {
         <svg
             aria-hidden="true"
             viewBox="0 0 32 28"
-            className="block h-7 w-8"
+            className="block h-6 w-7 opacity-80"
             fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
         >
             <path
-                d="M2 9.5h10.5l2.5 3H30v12H2v-15Z"
-                fill="#111827"
+                d="M3.5 9.5h9l2.5 3h13.5v11H3.5v-14Z"
+                strokeWidth="1.8"
             />
             <path
-                d="M2 8h10.5l2.5 3H30v3H2V8Z"
-                fill="#111827"
+                d="M3.5 9.5v-2h9l2.5 3h13.5v2"
+                strokeWidth="1.8"
             />
             <path
-                d="M16 2h5v11h4l-6.5 7L12 13h4V2Z"
-                fill="#ffffff"
-                stroke="#111827"
+                d="M18 3.5v12"
                 strokeWidth="2"
-                strokeLinejoin="round"
+            />
+            <path
+                d="m13.5 11 4.5 4.5 4.5-4.5"
+                strokeWidth="2"
             />
         </svg>
     )
@@ -107,6 +112,7 @@ export function EntityEditor() {
     const [phoneImageError, setPhoneImageError] = useState<string | null>(null)
     const [phoneImageModalOpen, setPhoneImageModalOpen] = useState(false)
     const [isAddingDivider, setIsAddingDivider] = useState(false)
+    const [enableDividerCreation, setEnableDividerCreation] = useState(true)
     const [importTitlesDialogOpen, setImportTitlesDialogOpen] = useState(false)
     const [lastUsedQuickTitle, setLastUsedQuickTitle] = useState<string | null>(null)
     const [quickTitleDialog, setQuickTitleDialog] = useState({
@@ -149,6 +155,20 @@ export function EntityEditor() {
         phoneImageSettingsService.getPhoneImageSettings().then((settings) => {
             if (isMounted) {
                 setPhoneImageSettings(settings)
+            }
+        })
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
+
+    useEffect(() => {
+        let isMounted = true
+
+        settingsService.getPlateauTitleDividerCreationEnabled().then((enabled) => {
+            if (isMounted) {
+                setEnableDividerCreation(enabled)
             }
         })
 
@@ -289,11 +309,12 @@ export function EntityEditor() {
         }
     }
 
-    const canAddTitleDivider =
+    const canUsePlateauTitleTools =
         activeSection?.kind === 'invited' &&
         activeEntityType === 'titles' &&
         editorEntityType === 'titles'
-    const canImportTitlesFromBackup = canAddTitleDivider
+    const canAddTitleDivider = enableDividerCreation && canUsePlateauTitleTools
+    const canImportTitlesFromBackup = canUsePlateauTitleTools
 
     const addTitleDivider = async () => {
         if (!canAddTitleDivider || isAddingDivider) return

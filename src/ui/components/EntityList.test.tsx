@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { EntityList } from './EntityList'
@@ -138,6 +138,104 @@ describe('EntityList', () => {
         expect(csvHooks.getBlockItems).toHaveBeenCalledWith('invited-1', 'titles')
         expect(screen.getByText('BREAKING NEWS')).toBeInTheDocument()
         expect(screen.getByText('1.')).toBeInTheDocument()
+    })
+
+    it('scrolls to the end when a new title is appended', async () => {
+        const requestAnimationFrameSpy = vi
+            .spyOn(window, 'requestAnimationFrame')
+            .mockImplementation((callback) => {
+                callback(0)
+                return 0
+            })
+        let items = [
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'FIRST TITLE' } },
+        ]
+        csvHooks.getBlockItems.mockImplementation(() => items)
+
+        const view = renderEntityList()
+        const list = view.container.querySelector('.app-list') as HTMLDivElement
+        Object.defineProperty(list, 'scrollHeight', {
+            configurable: true,
+            value: 640,
+        })
+
+        items = [
+            ...items,
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'NEW TITLE' } },
+        ]
+        csvHooks.getBlockItems = vi.fn(() => items)
+
+        view.rerender(
+            <EditModeProvider>
+                <TitleFilterProvider>
+                    <EntityList />
+                </TitleFilterProvider>
+            </EditModeProvider>
+        )
+
+        await waitFor(() => {
+            expect(list.scrollTop).toBe(640)
+        })
+        requestAnimationFrameSpy.mockRestore()
+    })
+
+    it('briefly marks a newly appended title row', async () => {
+        vi.useFakeTimers()
+        let items = [
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'FIRST TITLE' } },
+        ]
+        csvHooks.getBlockItems.mockImplementation(() => items)
+
+        const view = renderEntityList()
+        items = [
+            ...items,
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'NEW TITLE' } },
+        ]
+        csvHooks.getBlockItems = vi.fn(() => items)
+
+        view.rerender(
+            <EditModeProvider>
+                <TitleFilterProvider>
+                    <EntityList />
+                </TitleFilterProvider>
+            </EditModeProvider>
+        )
+
+        const newTitleRow = screen.getByText('NEW TITLE').closest('.app-list-row')
+        expect(newTitleRow).toHaveClass('app-list-row-blink')
+
+        act(() => {
+            vi.advanceTimersByTime(900)
+        })
+        expect(newTitleRow).not.toHaveClass('app-list-row-blink')
+        vi.useRealTimers()
+    })
+
+    it('briefly marks an updated duplicate title without removing duplicate styling', () => {
+        let items = [
+            { type: 'title', entityType: 'titles', id: 'title-1', rowId: 'row-title-1', data: { title: 'DUPLICATE' } },
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'UNIQUE' } },
+        ]
+        csvHooks.getBlockItems.mockImplementation(() => items)
+
+        const view = renderEntityList()
+        items = [
+            items[0],
+            { type: 'title', entityType: 'titles', id: 'title-2', rowId: 'row-title-2', data: { title: 'DUPLICATE' } },
+        ]
+        csvHooks.getBlockItems = vi.fn(() => items)
+
+        view.rerender(
+            <EditModeProvider>
+                <TitleFilterProvider>
+                    <EntityList />
+                </TitleFilterProvider>
+            </EditModeProvider>
+        )
+
+        const updatedTitleRow = screen.getAllByText('DUPLICATE')[1].closest('.app-list-row')
+        expect(updatedTitleRow).toHaveClass('app-list-row-blink')
+        expect(updatedTitleRow?.className).toContain('bg-[var(--duplicate-title-bg)]')
     })
 
     it('renders title dividers in the exact mixed title-list position without numbering or title selection', async () => {

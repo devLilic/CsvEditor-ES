@@ -44,6 +44,8 @@ vi.mock('@/features/csv-editor/services/settingsService', () => ({
     settingsService: {
         restoreUiTheme: vi.fn(),
         setUiTheme: vi.fn(),
+        getPlateauTitleDividerCreationEnabled: vi.fn(),
+        setPlateauTitleDividerCreationEnabled: vi.fn(),
     },
 }))
 
@@ -83,6 +85,8 @@ describe('classic studio modals and settings theme', () => {
         vi.mocked(csvFileSettingsService.selectExportCsvFolder).mockResolvedValue('')
         vi.mocked(settingsService.restoreUiTheme).mockResolvedValue('dark')
         vi.mocked(settingsService.setUiTheme).mockImplementation(async (theme) => theme)
+        vi.mocked(settingsService.getPlateauTitleDividerCreationEnabled).mockResolvedValue(true)
+        vi.mocked(settingsService.setPlateauTitleDividerCreationEnabled).mockImplementation(async (enabled) => enabled)
     })
 
     afterEach(() => {

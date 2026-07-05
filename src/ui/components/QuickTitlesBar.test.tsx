@@ -10,6 +10,10 @@ describe('normalizeQuickTitle', () => {
         expect(normalizeQuickTitle('  BREAKING:  ')).toBe('BREAKING: ')
     })
 
+    it('normalizes manually typed lowercase prefixes to uppercase', () => {
+        expect(normalizeQuickTitle('breaking')).toBe('BREAKING: ')
+    })
+
     it('does not create an empty quick title', () => {
         expect(normalizeQuickTitle('   ')).toBe('')
     })
