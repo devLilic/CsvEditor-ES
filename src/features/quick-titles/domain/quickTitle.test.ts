@@ -25,6 +25,10 @@ describe('normalizeQuickTitle', () => {
         expect(normalizeQuickTitle(' PRESEDINTE ')).toBe('PRESEDINTE: ')
     })
 
+    it('normalizes lowercase input to uppercase', () => {
+        expect(normalizeQuickTitle('breaking')).toBe('BREAKING: ')
+    })
+
     it('returns an empty string for blank input', () => {
         expect(normalizeQuickTitle('   ')).toBe('')
     })
@@ -44,6 +48,13 @@ describe('normalizeAndDeduplicateQuickTitles', () => {
             'PRESEDINTE:',
             'PRESEDINTE: ',
         ])).toEqual(['PRESEDINTE: '])
+    })
+
+    it('treats different casing as duplicates', () => {
+        expect(normalizeAndDeduplicateQuickTitles([
+            'breaking',
+            'BREAKING:',
+        ])).toEqual(['BREAKING: '])
     })
 
     it('keeps the first occurrence and preserves order', () => {

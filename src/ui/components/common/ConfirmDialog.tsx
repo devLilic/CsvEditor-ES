@@ -27,13 +27,17 @@ export function ConfirmDialog({
             {open && (
                 <div className="app-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="app-modal w-80 rounded bg-white p-4">
-                        <h2 className="mb-2 font-semibold">{title}</h2>
-                        {description && (
-                            <p className="mb-4 text-sm text-gray-600">
-                                {description}
-                            </p>
-                        )}
-                        <div className="flex justify-end gap-2">
+                        <div className="app-modal-header">
+                            <h2 className="mb-2 font-semibold">{title}</h2>
+                        </div>
+                        <div className="app-modal-body">
+                            {description && (
+                                <p className="mb-4 text-sm text-gray-600">
+                                    {description}
+                                </p>
+                            )}
+                        </div>
+                        <div className="app-modal-footer flex justify-end gap-2">
                             <button className="app-button rounded border px-3 py-1" onClick={() => setOpen(false)}>
                                 {cancelLabel}
                             </button>

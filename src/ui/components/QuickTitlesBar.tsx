@@ -41,34 +41,38 @@ export function QuickTitlesBar({
 
     return (
         <div className="app-quick-titles flex justify-between items-start items-center gap-2 flex-wrap bg-gray-50 p-2 rounded">
-            <div className="flex gap-2">
+            <div className="app-quick-title-list flex min-w-0 flex-wrap gap-2">
                 {/* QuickTitle buttons */}
                 {quickTitles.map((qt) => {
                     const isActive = normalizeQuickTitle(qt) === normalizedActiveQuickTitle
 
                     return (
                     <div
-                        className={`app-quick-title flex rounded-lg border overflow-hidden ${
-                            isActive ? 'border-emerald-700 ring-2 ring-emerald-300' : 'border-blue-700'
+                        className={`app-quick-title flex max-w-full rounded-lg border overflow-hidden ${
+                            isActive ? 'app-quick-title-active border-emerald-700 ring-2 ring-emerald-300' : 'border-blue-700'
                         }`}
                         key={qt}
+                        title={qt.toUpperCase()}
                     >
                         <button
                             aria-pressed={isActive}
                             onClick={() => {
-                                onApplyPrefix(qt)
+                                onApplyPrefix(qt.toUpperCase())
                                 focusEditor()
                             }}
-                            className={`app-button app-button-primary px-3 py-2 rounded text-sm text-white ${
+                            className={`app-button app-button-primary app-quick-title-button min-w-0 max-w-56 px-3 py-2 rounded text-sm text-white ${
                                 isActive ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                         >
-                            {qt.toUpperCase()}
+                            <span className="block truncate">{qt.toUpperCase()}</span>
                         </button>
                         {editMode && (
                             <button
+                                type="button"
+                                aria-label={`Sterge prefixul ${qt}`}
+                                title={`Sterge prefixul ${qt}`}
                                 onClick={() => removeQuickTitle(qt)}
-                                className="app-icon-button px-2 text-sm hover:text-white hover:bg-red-700"
+                                className="app-icon-button app-quick-title-delete px-2 text-sm hover:text-white hover:bg-red-700"
                             >
                                 ✕
                             </button>

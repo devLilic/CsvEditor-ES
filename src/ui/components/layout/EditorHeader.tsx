@@ -151,7 +151,9 @@ export function EditorHeader() {
 
     return (
         <div className="app-header relative flex items-center justify-between gap-4 border-b bg-white px-4 py-2">
-            <SectionsTabs />
+            <div className="app-header-primary flex min-w-0 items-center gap-3">
+                <SectionsTabs />
+            </div>
 
             <div className="relative flex items-center">
                 <input

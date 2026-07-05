@@ -4,7 +4,7 @@ export function normalizeQuickTitle(value: string): string {
         return ''
     }
 
-    const withoutTrailingColon = trimmed.replace(/:\s*$/, '').trimEnd()
+    const withoutTrailingColon = trimmed.replace(/:\s*$/, '').trimEnd().toUpperCase()
     return withoutTrailingColon ? `${withoutTrailingColon}: ` : ''
 }
 

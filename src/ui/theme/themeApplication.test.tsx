@@ -27,6 +27,12 @@ describe('theme application', () => {
         expect(document.documentElement).toHaveAttribute('data-theme', 'metallic')
     })
 
+    it('root primeste data-theme=dark', () => {
+        applyUiTheme(document.documentElement, 'dark')
+
+        expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    })
+
     it('schimbarea temei actualizeaza atributul', () => {
         applyUiTheme(document.documentElement, 'legacy')
         applyUiTheme(document.documentElement, 'metallic')

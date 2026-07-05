@@ -36,6 +36,20 @@ describe('themeSetting', () => {
         })
     })
 
+    it('persista dark', async () => {
+        const api = (window as any).electronAPI
+        api.getAppConfig.mockResolvedValueOnce({ keepData: true })
+        api.setAppConfig.mockImplementationOnce(async (config: Record<string, unknown>) => config)
+
+        const result = await settingsService.setUiTheme('dark')
+
+        expect(result).toBe('dark')
+        expect(api.setAppConfig).toHaveBeenCalledWith({
+            keepData: true,
+            uiTheme: 'dark',
+        })
+    })
+
     it('restaureaza tema', async () => {
         const element = document.createElement('div')
 
@@ -63,7 +77,7 @@ describe('themeSetting', () => {
     })
 
     it('fallback la legacy', () => {
-        expect(getUiThemeSetting({ uiTheme: 'dark' })).toBe('legacy')
+        expect(getUiThemeSetting({ uiTheme: 'unknown' })).toBe('legacy')
         expect(createConfigWithUiThemeSetting(null, 'legacy')).toEqual({
             uiTheme: 'legacy',
         })

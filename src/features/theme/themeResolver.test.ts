@@ -10,8 +10,12 @@ describe('themeResolver', () => {
         expect(resolveUiTheme('metallic')).toBe('metallic')
     })
 
+    it('accepta dark', () => {
+        expect(resolveUiTheme('dark')).toBe('dark')
+    })
+
     it('revine la legacy pentru valoare invalida', () => {
-        expect(resolveUiTheme('dark')).toBe('legacy')
+        expect(resolveUiTheme('unknown')).toBe('legacy')
     })
 
     it('aplica atributul corect', () => {

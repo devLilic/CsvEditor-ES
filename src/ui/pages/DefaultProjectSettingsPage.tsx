@@ -35,6 +35,8 @@ export function DefaultProjectSettingsPage() {
     const [csvFileStatus, setCsvFileStatus] = useState<SaveStatus>('idle')
     const [uiTheme, setUiTheme] = useState<UiTheme>('legacy')
     const [uiThemeStatus, setUiThemeStatus] = useState<SaveStatus>('idle')
+    const [dividerCreationEnabled, setDividerCreationEnabled] = useState(true)
+    const [dividerCreationStatus, setDividerCreationStatus] = useState<SaveStatus>('idle')
 
     useEffect(() => {
         let isMounted = true
@@ -60,6 +62,12 @@ export function DefaultProjectSettingsPage() {
         settingsService.restoreUiTheme().then((storedTheme) => {
             if (isMounted) {
                 setUiTheme(storedTheme)
+            }
+        })
+
+        settingsService.getPlateauTitleDividerCreationEnabled().then((enabled) => {
+            if (isMounted) {
+                setDividerCreationEnabled(enabled)
             }
         })
 
@@ -224,6 +232,20 @@ export function DefaultProjectSettingsPage() {
         }
     }
 
+    const handleDividerCreationChange = async (enabled: boolean) => {
+        setDividerCreationEnabled(enabled)
+        setDividerCreationStatus('saving')
+
+        try {
+            const savedValue = await settingsService.setPlateauTitleDividerCreationEnabled(enabled)
+            setDividerCreationEnabled(savedValue)
+            setDividerCreationStatus('saved')
+        } catch {
+            setDividerCreationEnabled(true)
+            setDividerCreationStatus('error')
+        }
+    }
+
     const resolvedExportCsvFolder = csvFileSettings.workingCsvPath
         ? resolveEntityExportFolder({
             workingCsvPath: csvFileSettings.workingCsvPath,
@@ -253,7 +275,7 @@ export function DefaultProjectSettingsPage() {
                     </button>
                 </header>
 
-                <section className="app-panel flex flex-col gap-4 rounded bg-white p-5 shadow-sm">
+                <section className="app-panel app-settings-section app-settings-interface flex flex-col gap-4 rounded bg-white p-5 shadow-sm">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">
                             Aspect interfață
@@ -276,6 +298,17 @@ export function DefaultProjectSettingsPage() {
                             <input
                                 type="radio"
                                 name="uiTheme"
+                                value="dark"
+                                checked={uiTheme === 'dark'}
+                                onChange={() => handleUiThemeChange('dark')}
+                            />
+                            Dark
+                        </label>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input
+                                type="radio"
+                                name="uiTheme"
                                 value="metallic"
                                 checked={uiTheme === 'metallic'}
                                 onChange={() => handleUiThemeChange('metallic')}
@@ -291,9 +324,31 @@ export function DefaultProjectSettingsPage() {
                             <span className="text-sm text-red-700">Setarea nu a putut fi salvată.</span>
                         )}
                     </div>
+
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input
+                            type="checkbox"
+                            checked={dividerCreationEnabled}
+                            onChange={(event) => handleDividerCreationChange(event.target.checked)}
+                        />
+                        Use Divider
+                    </label>
+
+                    {dividerCreationStatus === 'saved' && (
+                        <span className="text-sm text-green-700">Salvat.</span>
+                    )}
+
+                    {dividerCreationStatus === 'error' && (
+                        <span className="text-sm text-red-700">Setarea Divider nu a putut fi salvata.</span>
+                    )}
                 </section>
 
-                <form onSubmit={handleSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <form onSubmit={handleSubmit} className="app-panel app-settings-section app-settings-general flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            General
+                        </h2>
+                    </div>
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Titlu implicit</span>
                         <input
@@ -302,7 +357,6 @@ export function DefaultProjectSettingsPage() {
                             className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
-
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Nume implicit</span>
                         <input
@@ -311,7 +365,6 @@ export function DefaultProjectSettingsPage() {
                             className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
-
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Funcție implicită</span>
                         <input
@@ -320,7 +373,6 @@ export function DefaultProjectSettingsPage() {
                             className="app-input rounded border border-gray-300 px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </label>
-
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Locație implicită</span>
                         <input
@@ -367,7 +419,7 @@ export function DefaultProjectSettingsPage() {
                     </div>
                 </form>
 
-                <form onSubmit={handlePhoneImageSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <form onSubmit={handlePhoneImageSubmit} className="app-panel app-settings-section app-settings-files flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">
                             Setări imagine apel telefonic
@@ -444,11 +496,15 @@ export function DefaultProjectSettingsPage() {
                     </div>
                 </form>
 
-                <form onSubmit={handleCsvFileSubmit} className="app-panel flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
+                <form onSubmit={handleCsvFileSubmit} className="app-panel app-settings-section app-settings-storage flex flex-col gap-5 rounded bg-white p-5 shadow-sm">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">
                             Setări fișier CSV
                         </h2>
+                    </div>
+
+                    <div className="app-settings-subsection">
+                        <h3 className="text-sm font-semibold text-gray-800">Fi?iere ?i foldere</h3>
                     </div>
 
                     <label className="flex flex-col gap-1">
@@ -468,6 +524,10 @@ export function DefaultProjectSettingsPage() {
                             </button>
                         </div>
                     </label>
+
+                    <div className="app-settings-subsection">
+                        <h3 className="text-sm font-semibold text-gray-800">Backup</h3>
+                    </div>
 
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Folder backup CSV</span>
@@ -504,6 +564,10 @@ export function DefaultProjectSettingsPage() {
                             </button>
                         </div>
                     </label>
+
+                    <div className="app-settings-subsection">
+                        <h3 className="text-sm font-semibold text-gray-800">Export</h3>
+                    </div>
 
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-gray-700">Export CSV Folder</span>
@@ -548,7 +612,12 @@ export function DefaultProjectSettingsPage() {
                     </div>
                 </form>
 
-                <AppUpdatePanel />
+                <div className="app-settings-section app-settings-updates">
+                    <h2 className="mb-3 text-lg font-semibold text-gray-900">
+                        Actualizări
+                    </h2>
+                    <AppUpdatePanel />
+                </div>
             </div>
         </main>
     )

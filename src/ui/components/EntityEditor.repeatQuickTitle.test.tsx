@@ -174,6 +174,23 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         expect(titleInput()).toHaveValue('INVITAT: ')
     })
 
+    it('marks and repeats a QuickTitle created manually with lowercase text', async () => {
+        const user = userEvent.setup()
+        csvHooks.quickTitles = ['breaking: ']
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'BREAKING:' }))
+        await user.type(titleInput(), 'Text curent')
+
+        expect(titleInput()).toHaveValue('BREAKING: Text curent')
+        expect(screen.getByRole('button', { name: 'BREAKING:' })).toHaveAttribute('aria-pressed', 'true')
+
+        await user.click(screen.getByRole('button', { name: 'BREAKING:' }))
+
+        expect(titleInput()).toHaveValue('BREAKING: ')
+        expect(screen.getByRole('button', { name: 'BREAKING:' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
     it('clears the active QuickTitle memory when the title input is emptied', async () => {
         const user = userEvent.setup()
         renderEntityEditor()

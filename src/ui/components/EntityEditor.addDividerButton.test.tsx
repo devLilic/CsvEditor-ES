@@ -1,8 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { EntityEditor } from './EntityEditor'
+import { settingsService } from '@/features/csv-editor/services/settingsService'
 import { EditModeProvider, useEditMode } from '@/ui/context/EditModeContext'
 import { TemplateDocumentProvider } from '@/features/template-editor/state/TemplateDocumentProvider'
 
@@ -127,6 +128,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
 })
 
 describe('EntityEditor add divider button', () => {
@@ -172,6 +174,28 @@ describe('EntityEditor add divider button', () => {
         renderEntityEditor()
 
         expect(screen.getByRole('button', { name: 'Separator vizual' })).toBeInTheDocument()
+    })
+
+    it('does not appear when divider creation is disabled in Settings', async () => {
+        vi.spyOn(settingsService, 'getPlateauTitleDividerCreationEnabled').mockResolvedValueOnce(false)
+
+        renderEntityEditor()
+
+        await waitFor(() => {
+            expect(screen.queryByRole('button', { name: 'Separator vizual' })).not.toBeInTheDocument()
+        })
+    })
+
+    it('keeps the archive import button visible when divider creation is disabled', async () => {
+        vi.spyOn(settingsService, 'getPlateauTitleDividerCreationEnabled').mockResolvedValueOnce(false)
+
+        renderEntityEditor()
+
+        expect(screen.getByRole('button', { name: /Import/i })).toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.queryByRole('button', { name: 'Separator vizual' })).not.toBeInTheDocument()
+        })
+        expect(screen.getByRole('button', { name: /Import/i })).toBeInTheDocument()
     })
 
     it('click without selection adds the divider at the end', async () => {

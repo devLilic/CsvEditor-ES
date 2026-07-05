@@ -90,8 +90,8 @@ export function SectionsTabs() {
                     return (
                         <div
                             key={section.id}
-                            className={`app-tab flex items-center gap-1 rounded border px-2 py-1 ${
-                                isActive ? 'bg-blue-600 text-white border-blue-700' : 'bg-white hover:bg-gray-50'
+                            className={`app-tab app-section-tab app-section-tab-beta flex items-center gap-1 rounded border px-2 py-1 ${
+                                isActive ? 'app-tab-active bg-blue-600 text-white border-blue-700' : 'app-tab-inactive bg-white hover:bg-gray-50'
                             }`}
                         >
                             <button
@@ -139,8 +139,8 @@ export function SectionsTabs() {
                     <button
                         key={section.id}
                         onClick={() => handleSwitchSection(section.id)}
-                        className={`app-tab px-3 py-1 rounded text-sm border ${
-                            isActive ? 'bg-blue-600 text-white border-blue-700' : 'bg-white hover:bg-gray-50 border-gray-200'
+                        className={`app-tab app-section-tab app-section-tab-platou px-3 py-1 rounded text-sm border ${
+                            isActive ? 'app-tab-active bg-blue-600 text-white border-blue-700' : 'app-tab-inactive bg-white hover:bg-gray-50 border-gray-200'
                         }`}
                     >
                         PLATOU
@@ -158,7 +158,7 @@ export function SectionsTabs() {
 
             <button
                 onClick={() => setAddOpen(true)}
-                className="app-button app-button-secondary px-3 py-1 rounded text-sm border bg-white border-green-300 hover:bg-green-500 hover:text-white"
+                className="app-button app-button-secondary app-add-beta-button px-3 py-1 rounded text-sm border bg-white border-green-300 hover:bg-green-500 hover:text-white"
                 title="Add BETA"
             >
                 ADAUGĂ BETA
