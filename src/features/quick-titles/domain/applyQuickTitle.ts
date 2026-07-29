@@ -3,29 +3,35 @@ import { normalizeQuickTitle } from './quickTitle'
 export type ApplyQuickTitleInput = {
     editorValue: string
     selectedQuickTitle: string
-    lastUsedQuickTitle: string | null
+    activeQuickTitle: string | null
 }
 
 export type ApplyQuickTitleResult = {
     editorValue: string
-    lastUsedQuickTitle: string
-    repeated: boolean
+    activeQuickTitle: string | null
+    toggledOn: boolean
 }
 
 export function applyQuickTitle(
     input: ApplyQuickTitleInput
 ): ApplyQuickTitleResult {
     const selectedQuickTitle = normalizeQuickTitle(input.selectedQuickTitle)
-    const lastUsedQuickTitle = input.lastUsedQuickTitle === null
+    const activeQuickTitle = input.activeQuickTitle === null
         ? null
-        : normalizeQuickTitle(input.lastUsedQuickTitle)
-    const repeated = selectedQuickTitle === lastUsedQuickTitle
+        : normalizeQuickTitle(input.activeQuickTitle)
+    const isSelectedQuickTitleActive = selectedQuickTitle === activeQuickTitle
 
-    if (repeated) {
+    if (isSelectedQuickTitleActive) {
+        const hasSelectedPrefix = input.editorValue
+            .toUpperCase()
+            .startsWith(selectedQuickTitle)
+
         return {
-            editorValue: selectedQuickTitle,
-            lastUsedQuickTitle: selectedQuickTitle,
-            repeated: true,
+            editorValue: hasSelectedPrefix
+                ? input.editorValue.slice(selectedQuickTitle.length)
+                : input.editorValue,
+            activeQuickTitle: null,
+            toggledOn: false,
         }
     }
 
@@ -33,7 +39,7 @@ export function applyQuickTitle(
 
     return {
         editorValue: `${selectedQuickTitle}${cleaned}`,
-        lastUsedQuickTitle: selectedQuickTitle,
-        repeated: false,
+        activeQuickTitle: selectedQuickTitle,
+        toggledOn: true,
     }
 }

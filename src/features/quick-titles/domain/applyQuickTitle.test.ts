@@ -2,61 +2,75 @@ import { describe, expect, it } from 'vitest'
 import { applyQuickTitle, type ApplyQuickTitleInput } from './applyQuickTitle'
 
 describe('applyQuickTitle', () => {
-    it('keeps the current behavior on first click', () => {
+    it('activates a QuickTitle and replaces the current leading prefix', () => {
         expect(applyQuickTitle({
             editorValue: 'DIRECTOR: sedinta de guvern',
             selectedQuickTitle: 'PRESEDINTE',
-            lastUsedQuickTitle: null,
+            activeQuickTitle: null,
         })).toEqual({
             editorValue: 'PRESEDINTE: sedinta de guvern',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
-            repeated: false,
+            activeQuickTitle: 'PRESEDINTE: ',
+            toggledOn: true,
         })
     })
 
-    it('remembers the selected QuickTitle', () => {
-        const result = applyQuickTitle({
-            editorValue: 'sedinta de guvern',
-            selectedQuickTitle: 'PRESEDINTE',
-            lastUsedQuickTitle: null,
-        })
-
-        expect(result.lastUsedQuickTitle).toBe('PRESEDINTE: ')
-    })
-
-    it('resets the editor on repeated click', () => {
+    it('deactivates the active QuickTitle and preserves the title body', () => {
         expect(applyQuickTitle({
             editorValue: 'PRESEDINTE: sedinta de guvern',
             selectedQuickTitle: 'PRESEDINTE',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
+            activeQuickTitle: 'PRESEDINTE: ',
         })).toEqual({
-            editorValue: 'PRESEDINTE: ',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
-            repeated: true,
+            editorValue: 'sedinta de guvern',
+            activeQuickTitle: null,
+            toggledOn: false,
         })
     })
 
-    it('compares QuickTitles using normalized values', () => {
+    it('leaves an empty editor when deactivating a prefix without a body', () => {
+        expect(applyQuickTitle({
+            editorValue: 'PRESEDINTE: ',
+            selectedQuickTitle: 'PRESEDINTE',
+            activeQuickTitle: 'PRESEDINTE: ',
+        })).toEqual({
+            editorValue: '',
+            activeQuickTitle: null,
+            toggledOn: false,
+        })
+    })
+
+    it('compares active QuickTitles using normalized values', () => {
         expect(applyQuickTitle({
             editorValue: 'PRESEDINTE: sedinta de guvern',
             selectedQuickTitle: ' PRESEDINTE:   ',
-            lastUsedQuickTitle: 'PRESEDINTE',
+            activeQuickTitle: 'PRESEDINTE',
         })).toEqual({
-            editorValue: 'PRESEDINTE: ',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
-            repeated: true,
+            editorValue: 'sedinta de guvern',
+            activeQuickTitle: null,
+            toggledOn: false,
         })
     })
 
-    it('does not reset when another QuickTitle is selected', () => {
+    it('activates another QuickTitle and preserves the title body', () => {
         expect(applyQuickTitle({
             editorValue: 'PRESEDINTE: sedinta de guvern',
             selectedQuickTitle: 'DIRECTOR',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
+            activeQuickTitle: 'PRESEDINTE: ',
         })).toEqual({
             editorValue: 'DIRECTOR: sedinta de guvern',
-            lastUsedQuickTitle: 'DIRECTOR: ',
-            repeated: false,
+            activeQuickTitle: 'DIRECTOR: ',
+            toggledOn: true,
+        })
+    })
+
+    it('does not remove editor text when an inconsistent active prefix is toggled off', () => {
+        expect(applyQuickTitle({
+            editorValue: 'sedinta de guvern',
+            selectedQuickTitle: 'PRESEDINTE',
+            activeQuickTitle: 'PRESEDINTE: ',
+        })).toEqual({
+            editorValue: 'sedinta de guvern',
+            activeQuickTitle: null,
+            toggledOn: false,
         })
     })
 
@@ -64,7 +78,7 @@ describe('applyQuickTitle', () => {
         const input: ApplyQuickTitleInput = {
             editorValue: 'PRESEDINTE: sedinta de guvern',
             selectedQuickTitle: 'DIRECTOR',
-            lastUsedQuickTitle: 'PRESEDINTE: ',
+            activeQuickTitle: 'PRESEDINTE: ',
         }
         const snapshot = { ...input }
 
