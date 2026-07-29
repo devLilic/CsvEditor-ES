@@ -142,7 +142,7 @@ async function seedRepeatedQuickTitle(user: ReturnType<typeof userEvent.setup>) 
     await user.type(titleInput(), 'Ion Popescu')
 }
 
-describe('EntityEditor repeated QuickTitle memory', () => {
+describe('EntityEditor QuickTitle toggle', () => {
     it('inserts the QuickTitle on first click', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
@@ -164,17 +164,29 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         expect(titleInput()).toHaveValue('INVITAT: Ion Popescu')
     })
 
-    it('resets the input on repeated click', async () => {
+    it('toggles the active QuickTitle off and preserves the title body', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
         await seedRepeatedQuickTitle(user)
 
         await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
 
-        expect(titleInput()).toHaveValue('INVITAT: ')
+        expect(titleInput()).toHaveValue('Ion Popescu')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
     })
 
-    it('marks and repeats a QuickTitle created manually with lowercase text', async () => {
+    it('toggles off to an empty editor when only the prefix is present', async () => {
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+
+        expect(titleInput()).toHaveValue('')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('normalizes a lowercase QuickTitle when toggling it on and off', async () => {
         const user = userEvent.setup()
         csvHooks.quickTitles = ['breaking: ']
         renderEntityEditor()
@@ -187,11 +199,11 @@ describe('EntityEditor repeated QuickTitle memory', () => {
 
         await user.click(screen.getByRole('button', { name: 'BREAKING:' }))
 
-        expect(titleInput()).toHaveValue('BREAKING: ')
-        expect(screen.getByRole('button', { name: 'BREAKING:' })).toHaveAttribute('aria-pressed', 'true')
+        expect(titleInput()).toHaveValue('Text curent')
+        expect(screen.getByRole('button', { name: 'BREAKING:' })).toHaveAttribute('aria-pressed', 'false')
     })
 
-    it('clears the active QuickTitle memory when the title input is emptied', async () => {
+    it('turns the QuickTitle off when its prefix is removed manually', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
 
@@ -199,17 +211,13 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
 
         await user.clear(titleInput())
+        await user.type(titleInput(), 'Titlu fara declarant')
 
-        expect(titleInput()).toHaveValue('')
+        expect(titleInput()).toHaveValue('Titlu fara declarant')
         expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
-
-        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
-
-        expect(titleInput()).toHaveValue('INVITAT: ')
-        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
     })
 
-    it('does not use the previous prefix rule for another QuickTitle', async () => {
+    it('activates only the newly selected QuickTitle and preserves the title body', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
         await seedRepeatedQuickTitle(user)
@@ -217,6 +225,79 @@ describe('EntityEditor repeated QuickTitle memory', () => {
         await user.click(screen.getByRole('button', { name: 'MODERATOR:' }))
 
         expect(titleInput()).toHaveValue('MODERATOR: Ion Popescu')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
+        expect(screen.getByRole('button', { name: 'MODERATOR:' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('does not save a title containing only the active QuickTitle', async () => {
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+
+        expect(screen.getByRole('button', { name: /Adaug/i })).toBeDisabled()
+        await user.keyboard('{Enter}')
+        expect(csvHooks.addEntity).not.toHaveBeenCalled()
+    })
+
+    it('restores the active QuickTitle after adding a title with Enter', async () => {
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        await user.type(titleInput(), 'Ion Popescu')
+        await user.keyboard('{Enter}')
+
+        expect(csvHooks.addEntity).toHaveBeenCalledWith('invited-1', 'titles', {
+            title: 'INVITAT: ION POPESCU',
+        })
+        expect(titleInput()).toHaveValue('INVITAT: ')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
+        expect(screen.getByRole('button', { name: /Adaug/i })).toBeDisabled()
+    })
+
+    it('clears the editor after adding a title while QuickTitles are off', async () => {
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        await user.type(titleInput(), 'Ion Popescu')
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        await user.keyboard('{Enter}')
+
+        expect(csvHooks.addEntity).toHaveBeenCalledWith('invited-1', 'titles', {
+            title: 'ION POPESCU',
+        })
+        expect(titleInput()).toHaveValue('')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('restores the active QuickTitle after updating an existing title', async () => {
+        csvHooks.selected = { sectionId: 'invited-1', entityType: 'titles', id: 'title-1' }
+        csvHooks.getBlockItems.mockReturnValue([
+            {
+                entityType: 'titles',
+                id: 'title-1',
+                data: { title: 'INVITAT: Ion Popescu' },
+            },
+        ])
+        csvHooks.clearSelection.mockImplementationOnce(() => {
+            csvHooks.selected = null
+        })
+        const user = userEvent.setup()
+        renderEntityEditor()
+
+        await user.click(screen.getByRole('button', { name: 'INVITAT:' }))
+        await user.click(screen.getByRole('button', { name: 'Update' }))
+
+        expect(csvHooks.updateEntity).toHaveBeenCalledWith(
+            'invited-1',
+            'titles',
+            'title-1',
+            { title: 'INVITAT: ION POPESCU' },
+        )
+        expect(titleInput()).toHaveValue('INVITAT: ')
+        expect(screen.getByRole('button', { name: 'INVITAT:' })).toHaveAttribute('aria-pressed', 'true')
     })
 
     it('resets memory when another title is selected', async () => {
