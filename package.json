@@ -1,6 +1,6 @@
 {
   "name": "editie-speciala-graphics",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist-electron/main/index.js",
   "description": "Editor de titluri.",
   "author": "devlilic13",
