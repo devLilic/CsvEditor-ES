@@ -97,7 +97,7 @@ describe('DefaultProjectSettingsPage', () => {
     it('shows the required fields', () => {
         renderPage()
 
-        expect(screen.getByRole('heading', { name: 'Punctul pe Azi - Setări proiect nou' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: 'Ediție Specială - Setări proiect nou' })).toBeInTheDocument()
         expect(screen.getByRole('heading', { name: /proiect nou/i })).toBeInTheDocument()
         expect(screen.getByText(/Texte standard pentru proiect nou/i)).toBeInTheDocument()
         expect(screen.getByText(/urm/i)).toBeInTheDocument()

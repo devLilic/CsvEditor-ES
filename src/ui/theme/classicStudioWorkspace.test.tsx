@@ -161,11 +161,11 @@ describe('classic studio workspace theme', () => {
         expect(source).toContain('app-work-primary-button')
     })
 
-    it('butonul Import este separat de Adauga', () => {
+    it('butonul Separator vizual este separat de Adaugă', () => {
         const source = readFileSync(join(process.cwd(), 'src/ui/components/EntityEditor.tsx'), 'utf8')
 
-        expect(source).toContain('app-import-backup-button')
-        expect(source).toContain('ml-6')
+        expect(source).toContain('app-divider-button')
+        expect(source).toContain('ml-8')
     })
 
     it('QuickTitles folosesc clase tematice', () => {

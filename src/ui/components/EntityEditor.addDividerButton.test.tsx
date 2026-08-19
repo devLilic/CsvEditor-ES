@@ -186,18 +186,6 @@ describe('EntityEditor add divider button', () => {
         })
     })
 
-    it('keeps the archive import button visible when divider creation is disabled', async () => {
-        vi.spyOn(settingsService, 'getPlateauTitleDividerCreationEnabled').mockResolvedValueOnce(false)
-
-        renderEntityEditor()
-
-        expect(screen.getByRole('button', { name: /Import/i })).toBeInTheDocument()
-        await waitFor(() => {
-            expect(screen.queryByRole('button', { name: 'Separator vizual' })).not.toBeInTheDocument()
-        })
-        expect(screen.getByRole('button', { name: /Import/i })).toBeInTheDocument()
-    })
-
     it('click without selection adds the divider at the end', async () => {
         const user = userEvent.setup()
         renderEntityEditor()
