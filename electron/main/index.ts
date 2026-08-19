@@ -14,7 +14,7 @@ import { registerTitleBackupHandlers } from './title-backup-handlers'
 import { IPC_CHANNELS } from '../../src/shared/ipc-channels'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const APP_USER_MODEL_ID = 'com.devlilic.punctulpeazi.graphics'
+const APP_USER_MODEL_ID = 'com.devlilic.editiespeciala.graphics'
 
 // The built directory structure
 //
@@ -53,7 +53,7 @@ const indexHtml = path.join(RENDERER_DIST, 'index.html')
 const SPELLCHECK_LANGUAGES = ['ro']
 
 function getWindowTitle() {
-  return `Punctul pe Azi (ver. ${app.getVersion()})`
+  return `Ediție Specială TVR (ver. ${app.getVersion()})`
 }
 
 function lockWindowTitle(window: BrowserWindow) {

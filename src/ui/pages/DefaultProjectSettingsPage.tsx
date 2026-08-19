@@ -259,7 +259,7 @@ export function DefaultProjectSettingsPage() {
                 <header className="flex items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900">
-                            Punctul pe Azi - Setări proiect nou
+                            Ediție Specială - Setări proiect nou
                         </h1>
                         <p className="mt-1 text-sm text-gray-600">
                             Texte standard pentru proiect nou. Aceste valori vor fi folosite pentru următorul proiect nou.

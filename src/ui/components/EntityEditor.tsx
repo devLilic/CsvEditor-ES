@@ -569,17 +569,7 @@ export function EntityEditor() {
                         {selected ? 'Update' : 'Adaugă'}
                     </button>
 
-                    {canImportTitlesFromBackup && (
-                        <button
-                            type="button"
-                            aria-label="Importă din arhivă"
-                            title="Importă din arhivă"
-                            onClick={() => setImportTitlesDialogOpen(true)}
-                            className="app-button app-button-secondary app-import-backup-button ml-6 flex h-10 w-12 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                        >
-                            <ArchiveImportIcon />
-                        </button>
-                    )}
+                  
 
                     {canAddTitleDivider && (
                         <button
